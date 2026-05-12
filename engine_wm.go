@@ -9,6 +9,13 @@ import (
 	"github.com/godbus/dbus/v5"
 )
 
+func inputModeName(m int) string {
+	if name, ok := config.ImLookupTable[m]; ok {
+		return name
+	}
+	return fmt.Sprintf("unknown(%d)", m)
+}
+
 func (e *Engine) getWmClass() string {
 	return e.wmClasses
 }

@@ -21,6 +21,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os/exec"
 	"strconv"
 	"sync"
@@ -121,6 +122,7 @@ func (e *Engine) ProcessKeyEvent(keyVal uint32, keyCode uint32, state uint32) (b
 func (e *Engine) FocusIn() *dbus.Error {
 	var latestWm = e.getLatestWmClass()
 	e.checkWmClass(latestWm)
+	log.Printf("[vhtime] FocusIn: wmClass=%q mode=%d(%s)", e.getWmClass(), e.getInputMode(), inputModeName(e.getInputMode()))
 	e.RegisterProperties(e.propList)
 	e.RequireSurroundingText()
 	if e.isShortcutKeyEnable(KSEmojiDialog) {

@@ -1,0 +1,26 @@
+#!/bin/sh
+# Run ibus-vhtime in foreground and stream logs to /tmp/vhtime-debug.log
+# Usage: sh scripts/debug [--build]
+
+set -e
+cd "$(dirname "$0")/.."
+
+if [ "$1" = "--build" ]; then
+    echo "==> Building..."
+    sh scripts/build
+    sudo sh scripts/install /usr ""
+fi
+
+LOG=/tmp/vhtime-debug.log
+BINARY=/usr/lib/ibus-vhtime/ibus-engine-vhtime
+
+echo "==> Stopping existing engine..."
+pkill -f ibus-engine-vhtime 2>/dev/null || true
+sleep 0.5
+
+echo "==> Log: $LOG"
+echo "==> Focus Kitty (or any app) and type Vietnamese to see what happens."
+echo "==> Press Ctrl+C to stop."
+echo ""
+
+$BINARY --ibus 2>&1 | tee "$LOG"
