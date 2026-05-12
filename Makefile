@@ -37,6 +37,9 @@ tar_options_src=--transform "s/^\./$(pkg_name)-$(version)/" --exclude=.git --exc
 
 all: build
 
+release:
+	$(SHELL) scripts/release
+
 build:
 	$(SHELL) scripts/build
 
@@ -81,4 +84,4 @@ deb: clean
 	dpkg-buildpackage
 
 
-.PHONY: build clean build install uninstall src rpm deb
+.PHONY: build clean build install uninstall src rpm deb release

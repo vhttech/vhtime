@@ -25,6 +25,7 @@ debian/.debhelper
 *_linux
 *.tar.gz
 ibus-engine-*
+dist/
 keyboard-shortcut-editor
 macro-editor
 vendor/
