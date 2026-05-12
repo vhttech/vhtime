@@ -16,7 +16,21 @@ type fakeEngine struct {
 	isHideLookupTable   bool
 	isReset             bool
 	forwardKeyEvent     [3]uint32
+	// forwardedText accumulates characters delivered via ForwardKeyEvent press events.
+	// This mirrors what a terminal (e.g. Kitty) would receive when ForwardAsCommitIM is active.
+	forwardedText string
 }
+
+// reverseVnSymMapping converts X11 keysyms back to the Go rune they represent.
+// Some legacy keysyms (e.g. 0x01F0 for 'đ') don't match their Unicode codepoint,
+// so we can't decode them by arithmetic alone.
+var reverseVnSymMapping = func() map[uint32]rune {
+	m := make(map[uint32]rune, len(vnSymMapping))
+	for r, ks := range vnSymMapping {
+		m[ks] = r
+	}
+	return m
+}()
 
 func NewFakeEngine() *fakeEngine {
 	return &fakeEngine{}
@@ -119,6 +133,27 @@ func (e *fakeEngine) CommitText(text *ibus.Text) {
 // @signal(signature="uuu")
 func (e *fakeEngine) ForwardKeyEvent(keyval uint32, keycode uint32, state uint32) {
 	e.forwardKeyEvent = [3]uint32{keyval, keycode, state}
+	if state&IBusReleaseMask != 0 {
+		return
+	}
+	if keyval == IBusBackSpace {
+		runes := []rune(e.forwardedText)
+		if len(runes) > 0 {
+			e.forwardedText = string(runes[:len(runes)-1])
+		}
+		return
+	}
+	var cp rune
+	if r, ok := reverseVnSymMapping[keyval]; ok {
+		cp = r
+	} else if keyval >= 0x01000000 {
+		cp = rune(keyval - 0x01000000)
+	} else if keyval >= 0x20 && keyval < 0x10000 {
+		cp = rune(keyval)
+	}
+	if cp != 0 {
+		e.forwardedText += string(cp)
+	}
 }
 
 // @signal(signature="vubu")

@@ -285,6 +285,48 @@ func TestBsEngine(t *testing.T) {
 	}
 }
 
+func TestForwardAsCommitEngine(t *testing.T) {
+	cases := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{"duowidro", "duowidro", "đuổi"},
+		// dd → đ in Telex
+		{"d_stroke", "dd ", "đ "},
+		// tieengs = tiếng in Telex (ee→ê, s=sắc tone)
+		{"tieng", "tieengs ", "tiếng "},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			assertEngine(t, testCase{inputMode: config.ForwardAsCommitIM}, func(t testing.TB, fe *fakeEngine, e IEngine) {
+				for _, ch := range tc.input {
+					e.ProcessKeyEvent(uint32(ch), uint32(ch), 0)
+				}
+				if fe.forwardedText != tc.expected {
+					t.Errorf("forwardedText: want %q, got %q", tc.expected, fe.forwardedText)
+				}
+				if fe.commitText != "" {
+					t.Errorf("commitText should be empty for ForwardAsCommitIM, got %q", fe.commitText)
+				}
+			})
+		})
+	}
+}
+
+func TestKittyX11AutoMode(t *testing.T) {
+	// Verify that wmClasses="kitty:kitty" on X11 (isWayland=false) selects ForwardAsCommitIM
+	// even when DefaultInputMode is PreeditIM.
+	assertEngine(t, testCase{inputMode: config.PreeditIM}, func(t testing.TB, fe *fakeEngine, e IEngine) {
+		eng := e.(*Engine)
+		eng.wmClasses = "kitty:kitty"
+		mode := eng.getInputMode()
+		if mode != config.ForwardAsCommitIM {
+			t.Errorf("getInputMode() for kitty:kitty on X11: want ForwardAsCommitIM (%d), got %d", config.ForwardAsCommitIM, mode)
+		}
+	})
+}
+
 func assertEngine(t testing.TB, tc testCase, assertFn func(testing.TB, *fakeEngine, IEngine)) {
 	fe := NewFakeEngine()
 	engineName := "test"
