@@ -2,11 +2,31 @@ package main
 
 import (
 	"fmt"
+	"sync/atomic"
+	"unsafe"
 
 	wl "github.com/dkolbly/wl"
 )
 
-var wlAppId string
+// wlAppIdPtr is written by the Wayland event goroutine and read by the IBus
+// thread. We store it as an atomic pointer to a string to avoid a data race.
+var wlAppIdPtr unsafe.Pointer // *string
+
+func setWlAppId(s string) {
+	atomic.StorePointer(&wlAppIdPtr, unsafe.Pointer(&s))
+}
+
+func getWlAppId() string {
+	p := atomic.LoadPointer(&wlAppIdPtr)
+	if p == nil {
+		return ""
+	}
+	return *(*string)(p)
+}
+
+// wlAppId is kept as a convenience accessor for legacy callers in engine_wm.go.
+// Always access through getWlAppId() to get the atomic-safe value.
+var wlAppId = ""
 
 func wlGetFocusWindowClass() error {
 	display, err := wl.Connect("")
@@ -20,7 +40,8 @@ func wlGetFocusWindowClass() error {
 	}
 	for {
 		select {
-		case wlAppId = <-appIdChan:
+		case appId := <-appIdChan:
+			setWlAppId(appId)
 		case display.Context().Dispatch() <- struct{}{}:
 		}
 	}
