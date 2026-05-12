@@ -197,14 +197,21 @@ func (e *IBusBambooEngine) resetPreedit() {
 }
 
 func (e *IBusBambooEngine) commitPreeditAndResetForWBS(s string, isWBS bool) {
+	// Clear the client's preedit string via PREEDIT_CLEAR before committing.
+	// HidePreeditText() only hides visually — the browser/GTK still holds the
+	// last preedit string with PREEDIT_COMMIT mode. When the browser later calls
+	// ibus_input_context_reset() (e.g. after Enter submits a form), GTK auto-commits
+	// that cached string into the now-empty textbox. Sending an empty update with
+	// PREEDIT_CLEAR erases the cached string first, preventing the ghost word.
+	e.UpdatePreeditText(ibus.NewText(""), 0, false)
 	if e.config.IBflags&config.IBworkaroundForFBMessenger != 0 || isWBS {
 		// Fix missing the first word while typing in FB Messager as FB prefers
 		// committing text before hiding preedit
 		e.commitText(s)
 		e.HidePreeditText()
 	} else {
-		e.HidePreeditText()
 		e.commitText(s)
+		e.HidePreeditText()
 	}
 	e.HideAuxiliaryText()
 	e.HideLookupTable()
@@ -212,6 +219,7 @@ func (e *IBusBambooEngine) commitPreeditAndResetForWBS(s string, isWBS bool) {
 }
 
 func (e *IBusBambooEngine) commitPreeditAndReset(s string) {
+	e.UpdatePreeditText(ibus.NewText(""), 0, false)
 	e.HidePreeditText()
 	e.HideAuxiliaryText()
 	e.HideLookupTable()
