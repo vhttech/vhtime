@@ -4,7 +4,7 @@ import (
 	"vhtime/config"
 	"testing"
 
-	"github.com/BambooEngine/bamboo-core"
+	"vhtime/bamboo-core"
 )
 
 type keyEvent struct {

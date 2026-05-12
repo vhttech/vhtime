@@ -6,7 +6,7 @@ import (
 
 	"vhtime/config"
 
-	ibus "github.com/BambooEngine/goibus"
+	ibus "vhtime/goibus"
 )
 
 func (e *Engine) getInputMode() int {

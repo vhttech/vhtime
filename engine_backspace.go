@@ -27,7 +27,7 @@ import (
 
 	"vhtime/config"
 
-	"github.com/BambooEngine/bamboo-core"
+	"vhtime/bamboo-core"
 	"github.com/godbus/dbus/v5"
 )
 

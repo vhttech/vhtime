@@ -22,8 +22,8 @@ package main
 import (
 	"vhtime/config"
 
-	"github.com/BambooEngine/bamboo-core"
-	ibus "github.com/BambooEngine/goibus"
+	"vhtime/bamboo-core"
+	ibus "vhtime/goibus"
 	"github.com/godbus/dbus/v5"
 )
 

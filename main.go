@@ -26,7 +26,7 @@ import (
 	"os"
 	"strings"
 
-	ibus "github.com/BambooEngine/goibus"
+	ibus "vhtime/goibus"
 )
 
 const (

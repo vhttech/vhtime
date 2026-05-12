@@ -6,7 +6,7 @@ import (
 
 	"vhtime/config"
 
-	"github.com/BambooEngine/bamboo-core"
+	"vhtime/bamboo-core"
 )
 
 // rawInputLen returns the number of raw (pre-composition) characters buffered

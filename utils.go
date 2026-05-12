@@ -27,7 +27,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/BambooEngine/bamboo-core"
+	"vhtime/bamboo-core"
 )
 
 const (

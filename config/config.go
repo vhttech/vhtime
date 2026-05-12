@@ -7,7 +7,7 @@ import (
 	"os"
 	"os/user"
 
-	"github.com/BambooEngine/bamboo-core"
+	"vhtime/bamboo-core"
 )
 
 const (

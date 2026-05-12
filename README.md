@@ -4,10 +4,12 @@ vhtime - Bộ gõ tiếng Việt cho Linux/BSD
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://opensource.org/licenses/GPL-3.0)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/BambooEngine/ibus-vhtime)
 
-## Lưu ý 🚧:
+## Maintainer
 
-Dự án đã bị đình trệ trong 1 thời gian khá dài và có thể sẽ không được duy trì trong tương lai. Các bạn có thể sử dụng fcitx5-unikey là giải pháp thay thế khác (gần như tính năng đã hoàn thành và hỗ trợ Wayland tốt hơn).
-Nếu bạn muốn cứu sống ibus-vhtime hoặc thảo luận về tương lai của dự án tại đây https://github.com/BambooEngine/ibus-vhtime/issues/590
+**Fx Phúc Vinh** — [vinhhp@vhttech.com](mailto:vinhhp@vhttech.com)
+
+Dự án được fork từ [ibus-bamboo](https://github.com/BambooEngine/ibus-bamboo) (tác giả gốc: Luong Thanh Lam).
+Phiên bản này (**vhtime**) sẽ được tiếp tục phát triển và bảo trì bởi VHTech.
 
 ## Mục lục
 

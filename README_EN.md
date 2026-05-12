@@ -8,10 +8,11 @@ vhtime is a Vietnamese input method engine for IBus that translates key strokes 
 
    ![ibus-vhtime](https://github.com/BambooEngine/ibus-vhtime/raw/gh-resources/demo.gif)
 
-## Note 🚧:
-The project has been stalled for quite a long time and may not be maintained in the future. You can use fcitx5-unikey as an alternative solution (almost all features are complete and it supports Wayland better).
+## Maintainer
 
-If you want to revive ibus-vhtime or discuss the project's future, please visit https://github.com/BambooEngine/ibus-vhtime/issues/590.
+**Fx Phúc Vinh** — [vinhhp@vhttech.com](mailto:vinhhp@vhttech.com)
+
+This project (**vhtime**) is forked from [ibus-bamboo](https://github.com/BambooEngine/ibus-bamboo) (original author: Luong Thanh Lam) and will continue to be actively developed and maintained by VHTech.
 
 ## Getting Started
 

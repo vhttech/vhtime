@@ -22,8 +22,8 @@ package main
 import (
 	"strconv"
 
-	"github.com/BambooEngine/bamboo-core"
-	ibus "github.com/BambooEngine/goibus"
+	"vhtime/bamboo-core"
+	ibus "vhtime/goibus"
 )
 
 const EmojiMaxPageSize = 9

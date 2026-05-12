@@ -1,7 +1,7 @@
 package main
 
 import (
-	ibus "github.com/BambooEngine/goibus"
+	ibus "vhtime/goibus"
 	"github.com/godbus/dbus/v5"
 )
 
