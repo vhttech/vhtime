@@ -33,7 +33,7 @@ import (
 
 const BACKSPACE_INTERVAL = 0
 
-func (e *IBusBambooEngine) bsProcessKeyEvent(keyVal uint32, keyCode uint32, state uint32) (bool, *dbus.Error) {
+func (e *Engine) backspaceProcessKeyEvent(keyVal uint32, keyCode uint32, state uint32) (bool, *dbus.Error) {
 	if isMovementKey(keyVal) {
 		e.preeditor.Reset()
 		e.resetFakeBackspace()
@@ -41,7 +41,7 @@ func (e *IBusBambooEngine) bsProcessKeyEvent(keyVal uint32, keyCode uint32, stat
 		return false, nil
 	}
 	var keyRune = rune(keyVal)
-	if e.config.IBflags&config.IBmacroEnabled == 0 && len(keyPressChan) == 0 && e.getRawKeyLen() == 0 && !inKeyList(e.preeditor.GetInputMethod().AppendingKeys, keyRune) {
+	if e.config.IBflags&config.IBmacroEnabled == 0 && len(keyPressChan) == 0 && e.rawInputLen() == 0 && !inKeyList(e.preeditor.GetInputMethod().AppendingKeys, keyRune) {
 		e.updateLastKeyWithShift(keyVal, state)
 		if e.preeditor.CanProcessKey(keyRune) && isValidState(state) {
 			e.isFirstTimeSendingBS = true
@@ -55,7 +55,7 @@ func (e *IBusBambooEngine) bsProcessKeyEvent(keyVal uint32, keyCode uint32, stat
 		return false, nil
 	}
 
-	if e.shouldEnqueuKeyStrokes {
+	if e.shouldEnqueueKeyStrokes {
 		// WARNING: don't use ForwardKeyEvent api in XTestFakeKeyEvent/SurroundingText mode
 		if e.checkInputMode(config.XTestFakeKeyEventIM) || e.checkInputMode(config.SurroundingTextIM) {
 			if keyVal == IBusBackSpace {
@@ -64,7 +64,7 @@ func (e *IBusBambooEngine) bsProcessKeyEvent(keyVal uint32, keyCode uint32, stat
 					return false, nil
 				} else {
 					sleep()
-					if e.getRawKeyLen() > 0 {
+					if e.rawInputLen() > 0 {
 						if e.shouldFallbackToEnglish(true) {
 							e.preeditor.RestoreLastWord(false)
 						}
@@ -95,14 +95,14 @@ func (e *IBusBambooEngine) bsProcessKeyEvent(keyVal uint32, keyCode uint32, stat
 	}
 }
 
-func (e *IBusBambooEngine) keyPressForwardHandler(keyVal, keyCode, state uint32) {
+func (e *Engine) keyPressForwardHandler(keyVal, keyCode, state uint32) {
 	ret := e.keyPressHandler(keyVal, keyCode, state)
 	if !ret {
 		e.ForwardKeyEvent(keyVal, keyCode, state)
 	}
 }
 
-func (e *IBusBambooEngine) keyPressHandler(keyVal, keyCode, state uint32) bool {
+func (e *Engine) keyPressHandler(keyVal, keyCode, state uint32) bool {
 	defer e.updateLastKeyWithShift(keyVal, state)
 	if e.keyPressDelay > 0 {
 		time.Sleep(time.Duration(e.keyPressDelay) * time.Millisecond)
@@ -111,7 +111,7 @@ func (e *IBusBambooEngine) keyPressHandler(keyVal, keyCode, state uint32) bool {
 	oldText := e.getPreeditString()
 	_, oldMacText := e.getMacroText()
 	if keyVal == IBusBackSpace {
-		if e.getRawKeyLen() > 0 {
+		if e.rawInputLen() > 0 {
 			if e.config.IBflags&config.IBautoNonVnRestore == 0 {
 				e.preeditor.RemoveLastChar(false)
 				return false
@@ -151,7 +151,7 @@ func (e *IBusBambooEngine) keyPressHandler(keyVal, keyCode, state uint32) bool {
 	return isValidKey
 }
 
-func (e *IBusBambooEngine) getPreeditOffset(newRunes, oldRunes []rune) int {
+func (e *Engine) getPreeditOffset(newRunes, oldRunes []rune) int {
 	var minLen = len(oldRunes)
 	if len(newRunes) < minLen {
 		minLen = len(newRunes)
@@ -164,7 +164,7 @@ func (e *IBusBambooEngine) getPreeditOffset(newRunes, oldRunes []rune) int {
 	return minLen
 }
 
-func (e *IBusBambooEngine) shouldAppendDeadKey(newText, oldText string) bool {
+func (e *Engine) shouldAppendDeadKey(newText, oldText string) bool {
 	var oldRunes = []rune(oldText)
 	var newRunes = []rune(newText)
 	var offset = e.getPreeditOffset(newRunes, oldRunes)
@@ -177,7 +177,7 @@ func (e *IBusBambooEngine) shouldAppendDeadKey(newText, oldText string) bool {
 	return false
 }
 
-func (e *IBusBambooEngine) updatePreviousText(oldText, newText string) {
+func (e *Engine) updatePreviousText(oldText, newText string) {
 	offsetRunes, nBackSpace := e.getOffsetRunes(newText, oldText)
 	if nBackSpace > 0 {
 		e.SendBackSpace(nBackSpace)
@@ -186,7 +186,7 @@ func (e *IBusBambooEngine) updatePreviousText(oldText, newText string) {
 	e.bsCommitText(offsetRunes)
 }
 
-func (e *IBusBambooEngine) updatePreviousTextInBatch(oldText, newText string, isWordBreakRune bool) {
+func (e *Engine) updatePreviousTextInBatch(oldText, newText string, isWordBreakRune bool) {
 	offsetRunes, nBackSpace := e.getOffsetRunes(newText, oldText)
 	if nBackSpace > 0 {
 		e.SendBackSpace(nBackSpace)
@@ -228,7 +228,7 @@ func (e *IBusBambooEngine) updatePreviousTextInBatch(oldText, newText string, is
 // batchCommit compares two given text and commit the right outer text, with backspaces if necessary
 // toi - tôi = ôi + 2 BS
 // <space> - tôi = tôi
-func (e *IBusBambooEngine) batchCommit(oldText string, newText string, nBackSpace int, isWordBreakRune bool) {
+func (e *Engine) batchCommit(oldText string, newText string, nBackSpace int, isWordBreakRune bool) {
 	fullRunes := []rune(newText)
 	if len(fullRunes) == 0 {
 		return
@@ -248,7 +248,7 @@ func (e *IBusBambooEngine) batchCommit(oldText string, newText string, nBackSpac
 }
 
 // getOffsetRunes returns the right outer text and number of pending backspaces
-func (e *IBusBambooEngine) getOffsetRunes(newText, oldText string) ([]rune, int) {
+func (e *Engine) getOffsetRunes(newText, oldText string) ([]rune, int) {
 	var oldRunes = []rune(oldText)
 	var newRunes = []rune(newText)
 	var nBackSpace = 0
@@ -260,7 +260,7 @@ func (e *IBusBambooEngine) getOffsetRunes(newText, oldText string) ([]rune, int)
 	return newRunes[offset:], nBackSpace
 }
 
-func (e *IBusBambooEngine) SendBackSpace(n int) {
+func (e *Engine) SendBackSpace(n int) {
 	// Gtk/Qt apps have a serious sync issue with fake backspaces
 	// and normal string committing, so we'll not commit right now
 	// but delay until all the sent backspaces got processed.
@@ -319,11 +319,11 @@ func (e *IBusBambooEngine) SendBackSpace(n int) {
 	}
 }
 
-func (e *IBusBambooEngine) resetFakeBackspace() {
+func (e *Engine) resetFakeBackspace() {
 	e.setFakeBackspace(0)
 }
 
-func (e *IBusBambooEngine) bsCommitText(rs []rune) {
+func (e *Engine) bsCommitText(rs []rune) {
 	if len(rs) == 0 {
 		return
 	}

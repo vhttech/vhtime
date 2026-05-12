@@ -30,8 +30,8 @@ import (
 	"github.com/godbus/dbus/v5"
 )
 
-func (e *IBusBambooEngine) preeditProcessKeyEvent(keyVal uint32, keyCode uint32, state uint32) (bool, *dbus.Error) {
-	var rawKeyLen = e.getRawKeyLen()
+func (e *Engine) preeditProcessKeyEvent(keyVal uint32, keyCode uint32, state uint32) (bool, *dbus.Error) {
+	var rawKeyLen = e.rawInputLen()
 	var keyRune = rune(keyVal)
 	var oldText = e.getPreeditString()
 	defer e.updateLastKeyWithShift(keyVal, state)
@@ -77,7 +77,7 @@ func (e *IBusBambooEngine) preeditProcessKeyEvent(keyVal uint32, keyCode uint32,
 	return isPrintableKey, nil
 }
 
-func (e *IBusBambooEngine) expandMacro(str string) string {
+func (e *Engine) expandMacro(str string) string {
 	var macroText = e.macroTable.GetText(str)
 	if e.config.IBflags&config.IBautoCapitalizeMacro != 0 {
 		switch determineMacroCase(str) {
@@ -90,7 +90,7 @@ func (e *IBusBambooEngine) expandMacro(str string) string {
 	return macroText
 }
 
-func (e *IBusBambooEngine) updatePreedit(processedStr string) {
+func (e *Engine) updatePreedit(processedStr string) {
 	defer func() {
 		if e.config.IBflags&config.IBmouseCapturing != 0 {
 			mouseCaptureUnlock()
@@ -116,14 +116,14 @@ func (e *IBusBambooEngine) updatePreedit(processedStr string) {
 	e.UpdatePreeditTextWithMode(ibusText, preeditLen, true, ibus.IBUS_ENGINE_PREEDIT_COMMIT)
 }
 
-func (e *IBusBambooEngine) getBambooInputMode() bamboo.Mode {
+func (e *Engine) getBambooInputMode() bamboo.Mode {
 	if e.shouldFallbackToEnglish(false) {
 		return bamboo.EnglishMode
 	}
 	return bamboo.VietnameseMode
 }
 
-func (e *IBusBambooEngine) shouldFallbackToEnglish(checkVnRune bool) bool {
+func (e *Engine) shouldFallbackToEnglish(checkVnRune bool) bool {
 	if e.config.IBflags&config.IBautoNonVnRestore == 0 {
 		return false
 	}
@@ -146,7 +146,7 @@ func (e *IBusBambooEngine) shouldFallbackToEnglish(checkVnRune bool) bool {
 	return !e.preeditor.IsValid(false)
 }
 
-func (e *IBusBambooEngine) mustFallbackToEnglish() bool {
+func (e *Engine) mustFallbackToEnglish() bool {
 	if e.config.IBflags&config.IBautoNonVnRestore == 0 {
 		return false
 	}
@@ -165,22 +165,22 @@ func (e *IBusBambooEngine) mustFallbackToEnglish() bool {
 	return !e.preeditor.IsValid(true)
 }
 
-func (e *IBusBambooEngine) getComposedString(oldText string) string {
+func (e *Engine) getComposedString(oldText string) string {
 	if bamboo.HasAnyVietnameseRune(oldText) && e.mustFallbackToEnglish() {
 		return e.getProcessedString(bamboo.EnglishMode)
 	}
 	return oldText
 }
 
-func (e *IBusBambooEngine) encodeText(text string) string {
+func (e *Engine) encodeText(text string) string {
 	return bamboo.Encode(e.config.OutputCharset, text)
 }
 
-func (e *IBusBambooEngine) getProcessedString(mode bamboo.Mode) string {
+func (e *Engine) getProcessedString(mode bamboo.Mode) string {
 	return e.preeditor.GetProcessedString(mode)
 }
 
-func (e *IBusBambooEngine) getPreeditString() string {
+func (e *Engine) getPreeditString() string {
 	if e.config.IBflags&config.IBmacroEnabled != 0 {
 		return e.getProcessedString(bamboo.PunctuationMode)
 	}
@@ -190,35 +190,25 @@ func (e *IBusBambooEngine) getPreeditString() string {
 	return e.getProcessedString(bamboo.VietnameseMode)
 }
 
-func (e *IBusBambooEngine) resetPreedit() {
+func (e *Engine) resetPreedit() {
 	e.HidePreeditText()
 	e.HideAuxiliaryText()
 	e.preeditor.Reset()
 }
 
-func (e *IBusBambooEngine) commitPreeditAndResetForWBS(s string, isWBS bool) {
-	// Clear the client's preedit string via PREEDIT_CLEAR before committing.
-	// HidePreeditText() only hides visually — the browser/GTK still holds the
-	// last preedit string with PREEDIT_COMMIT mode. When the browser later calls
-	// ibus_input_context_reset() (e.g. after Enter submits a form), GTK auto-commits
-	// that cached string into the now-empty textbox. Sending an empty update with
-	// PREEDIT_CLEAR erases the cached string first, preventing the ghost word.
+func (e *Engine) commitPreeditAndResetForWBS(s string, isPrintable bool) {
+	// Clear client preedit state to PREEDIT_CLEAR before committing, so that
+	// GTK/Chromium does not auto-commit the cached preedit string when
+	// ibus_input_context_reset() is called after Enter submits a form.
 	e.UpdatePreeditText(ibus.NewText(""), 0, false)
-	if e.config.IBflags&config.IBworkaroundForFBMessenger != 0 || isWBS {
-		// Fix missing the first word while typing in FB Messager as FB prefers
-		// committing text before hiding preedit
-		e.commitText(s)
-		e.HidePreeditText()
-	} else {
-		e.commitText(s)
-		e.HidePreeditText()
-	}
+	e.commitText(s)
+	e.HidePreeditText()
 	e.HideAuxiliaryText()
 	e.HideLookupTable()
 	e.preeditor.Reset()
 }
 
-func (e *IBusBambooEngine) commitPreeditAndReset(s string) {
+func (e *Engine) commitPreeditAndReset(s string) {
 	e.UpdatePreeditText(ibus.NewText(""), 0, false)
 	e.HidePreeditText()
 	e.HideAuxiliaryText()
@@ -227,7 +217,7 @@ func (e *IBusBambooEngine) commitPreeditAndReset(s string) {
 	e.preeditor.Reset()
 }
 
-func (e *IBusBambooEngine) commitText(str string) {
+func (e *Engine) commitText(str string) {
 	if str == "" {
 		return
 	}
@@ -237,10 +227,10 @@ func (e *IBusBambooEngine) commitText(str string) {
 	e.CommitText(ibus.NewText(e.encodeText(str)))
 }
 
-func (e *IBusBambooEngine) getVnSeq() string {
+func (e *Engine) getVnSeq() string {
 	return e.preeditor.GetProcessedString(bamboo.VietnameseMode)
 }
 
-func (e *IBusBambooEngine) hasMacroKey(key string) bool {
+func (e *Engine) hasMacroKey(key string) bool {
 	return e.macroTable.GetText(key) != ""
 }
