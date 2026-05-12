@@ -21,7 +21,6 @@ func wlGetFocusWindowClass() error {
 	for {
 		select {
 		case wlAppId = <-appIdChan:
-			fmt.Println("wlAppId = ", wlAppId)
 		case display.Context().Dispatch() <- struct{}{}:
 		}
 	}
