@@ -9,7 +9,7 @@ vhtime - Bộ gõ tiếng Việt cho Linux/BSD
 **Fx Phúc Vinh** — [vinhhp@vhttech.com](mailto:vinhhp@vhttech.com)
 
 Dự án được fork từ [ibus-bamboo](https://github.com/BambooEngine/ibus-bamboo) (tác giả gốc: Luong Thanh Lam).
-Phiên bản này (**vhtime**) sẽ được tiếp tục phát triển và bảo trì bởi VHTech.
+Phiên bản này (**vhtime**) sẽ được tiếp tục phát triển và bảo trì bởi VHTTECH.
 
 ## Mục lục
 
