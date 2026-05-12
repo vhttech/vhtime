@@ -20,7 +20,7 @@ CC=cc
 SHELL=sh
 
 engine_name=vhtime
-engine_gui_name=ibus-setup-Vhtime.desktop
+engine_gui_name=ibus-setup-vhtime.desktop
 ibus_e_name=ibus-engine-$(engine_name)
 pkg_name=ibus-$(engine_name)
 version=0.8.4

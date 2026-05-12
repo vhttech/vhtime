@@ -32,6 +32,7 @@ func GetIBusEngineCreator() func(*dbus.Conn, string) dbus.ObjectPath {
 		var engine = NewIbusBambooEngine(engineName, cfg, &baseEngine, bamboo.NewEngine(inputMethod, cfg.Flags))
 		engine.propList = GetPropListByConfig(cfg)
 		engine.shouldEnqueueKeyStrokes = true
+		engine.openGUI = ui.OpenGUI
 		ibus.PublishEngine(conn, objectPath, engine)
 		if *gui {
 			ui.OpenGUI(engine.engineName)

@@ -27,7 +27,6 @@ import (
 	"sync"
 
 	"vhtime/config"
-	"vhtime/ui"
 
 	"github.com/BambooEngine/bamboo-core"
 	ibus "github.com/BambooEngine/goibus"
@@ -59,6 +58,8 @@ type Engine struct {
 	lastCommitText         int64
 	shouldRestoreKeyStrokes bool
 	shouldEnqueueKeyStrokes bool
+	// openGUI is injected by the factory so the engine does not import the ui package directly.
+	openGUI func(engineName string)
 	// per-engine lazy-loaded resources (replacing package-level globals)
 	dictionary     map[string]bool
 	dictOnce       sync.Once
@@ -272,7 +273,9 @@ func (e *Engine) PropertyActivate(propName string, propState uint32) *dbus.Error
 	// GUI-opening actions — reload config after the dialog closes.
 	switch propName {
 	case PropKeyConfiguration, PropKeyInputModeLookupTableShortcut, PropKeyMacroTable:
-		ui.OpenGUI(e.engineName)
+		if e.openGUI != nil {
+			e.openGUI(e.engineName)
+		}
 		e.config = config.LoadConfig(e.engineName)
 		return nil
 	}
