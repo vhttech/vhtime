@@ -162,9 +162,21 @@ func (e *Engine) FocusOut() *dbus.Error {
 }
 
 func (e *Engine) Reset() *dbus.Error {
-	if e.checkInputMode(config.PreeditIM) {
-		e.commitPreeditAndReset(e.getPreeditString())
+	// IBus calls Reset when the application wants to abort the current composition
+	// (e.g. form submit, focus change handled at the IBus protocol level).
+	// We must reset ALL engine state, not just PreeditIM, to avoid stuck UI.
+	e.resetBuffer()
+	if e.isEmojiLTOpened {
+		e.closeEmojiCandidates()
 	}
+	if e.isInHexadecimal {
+		e.closeHexadecimalInput()
+	}
+	if e.isInputModeLTOpened {
+		e.closeInputModeCandidates()
+	}
+	// Reset fake-backspace counter so stale BS events don't corrupt next word.
+	e.resetFakeBackspace()
 	return nil
 }
 
