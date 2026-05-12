@@ -66,15 +66,16 @@ make install PREFIX=/usr DESTDIR=/tmp/pkg
 - `$PREFIX/lib/ibus-vhtime/` — binary `ibus-engine-vhtime`
 - `$PREFIX/share/ibus/component/vhtime.xml` — đăng ký engine với IBus
 
-## Vendor
+## Go Modules
 
-Tất cả dependencies được vendor tại `vendor/` (go mod vendor), build offline hoàn toàn.
+Dự án dùng Go modules chuẩn (không vendor). Dependencies được khai báo trong `go.mod` và khóa hash tại `go.sum`. Go tự tải về khi build.
 
 ```
-vendor/
-├── github.com/BambooEngine/bamboo-core   # Vietnamese NLP
-├── github.com/BambooEngine/goibus        # IBus Go binding
-├── github.com/dkolbly/wl                 # Wayland client
-├── github.com/godbus/dbus/v5             # D-Bus
-└── golang.org/x/net                      # context package
+github.com/BambooEngine/bamboo-core   # Vietnamese NLP
+github.com/BambooEngine/goibus        # IBus Go binding
+github.com/dkolbly/wl                 # Wayland client
+github.com/godbus/dbus/v5             # D-Bus
+golang.org/x/net                      # context package
 ```
+
+Để cập nhật dependencies: `go mod tidy`

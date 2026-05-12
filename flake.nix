@@ -21,16 +21,17 @@
           pkgs = nixpkgsFor.${system};
         in
         {
-          default = pkgs.stdenv.mkDerivation {
+          default = pkgs.buildGoModule {
             pname = "ibus-vhtime";
             inherit version;
 
             src = ./.;
 
+            vendorHash = null;
+
             nativeBuildInputs = [
               pkgs.pkg-config
               pkgs.wrapGAppsHook3
-              pkgs.go
             ];
 
             buildInputs = [
@@ -38,7 +39,6 @@
             ];
 
             preConfigure = ''
-              export GOCACHE="$TMPDIR/go-cache"
               sed -i "s,/usr,$out," data/vhtime.xml
             '';
 

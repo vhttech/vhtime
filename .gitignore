@@ -27,3 +27,4 @@ debian/.debhelper
 ibus-engine-*
 keyboard-shortcut-editor
 macro-editor
+vendor/
