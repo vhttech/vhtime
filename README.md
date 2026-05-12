@@ -18,7 +18,7 @@ Nếu bạn muốn cứu sống ibus-vhtime hoặc thảo luận về tương la
 	- [NixOS](#nixos)
 	- [Void Linux](#void-linux)
 	- [Cài đặt từ OpenBuildService](#cài-đặt-từ-openbuildservice)
-	- [Cài đặt từ mã nguồn](https://github.com/BambooEngine/ibus-vhtime/wiki/H%C6%B0%E1%BB%9Bng-d%E1%BA%ABn-c%C3%A0i-%C4%91%E1%BA%B7t-t%E1%BB%AB-m%C3%A3-ngu%E1%BB%93n)
+	- [Build từ mã nguồn](#build-từ-mã-nguồn)
 - [Hướng dẫn sử dụng](#hướng-dẫn-sử-dụng)
 - [Báo lỗi](#báo-lỗi)
 - [Giấy phép](#giấy-phép)
@@ -140,6 +140,37 @@ Bước cuối cùng là cập nhập lại flake và chuyển đổi hệ thố
 
 ```sh
 sudo xbps-install -S ibus-vhtime
+```
+
+### Build từ mã nguồn
+
+#### Ubuntu / Debian
+
+```sh
+# Cài các gói phụ thuộc
+sudo apt-get update
+sudo apt-get install -y golang libibus-1.0-dev libx11-dev libxtst-dev libgtk-3-dev
+
+# Build và cài đặt
+make build
+sudo make install PREFIX=/usr
+```
+
+#### Fedora / RHEL / CentOS
+
+```sh
+# Cài các gói phụ thuộc
+sudo dnf install -y golang ibus-devel libX11-devel libXtst-devel gtk3-devel
+
+# Build và cài đặt
+make build
+sudo make install PREFIX=/usr
+```
+
+Sau khi cài xong, khởi động lại IBus:
+
+```sh
+ibus restart
 ```
 
 ### Cài đặt từ OpenBuildService
