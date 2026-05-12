@@ -90,7 +90,7 @@ func OpenGUI(engName string) {
 	)
 	mText, err := os.ReadFile(macroFilePath)
 	if err != nil {
-		panic(err)
+		mText = []byte{}
 	}
 	data, err := json.MarshalIndent(cfg, "", "  ")
 	if err != nil {

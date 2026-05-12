@@ -34,10 +34,6 @@ func GetIBusEngineCreator() func(*dbus.Conn, string) dbus.ObjectPath {
 		engine.shouldEnqueueKeyStrokes = true
 		engine.openGUI = ui.OpenGUI
 		ibus.PublishEngine(conn, objectPath, engine)
-		if *gui {
-			ui.OpenGUI(engine.engineName)
-			os.Exit(0)
-		}
 		go engine.init()
 		return objectPath
 	}

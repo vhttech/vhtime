@@ -27,6 +27,7 @@ import (
 	"strings"
 
 	ibus "vhtime/goibus"
+	"vhtime/ui"
 )
 
 const (
@@ -60,6 +61,10 @@ func main() {
 	}
 	if *version {
 		fmt.Println(Version)
+	} else if *gui {
+		canonicalName := strings.ToLower(EngineName)
+		initConfigFiles(canonicalName)
+		ui.OpenGUI(canonicalName)
 	} else if *embedded {
 		engine := GetIBusEngineCreator()
 		bus := ibus.NewBus()
