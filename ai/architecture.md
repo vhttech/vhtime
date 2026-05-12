@@ -52,16 +52,21 @@ Engine chọn processor dựa vào `config.DefaultInputMode`:
 | UsIM | bypass (English/exclusion) | engine_utils.go |
 
 ### 4. Window Class Detection
-Engine theo dõi cửa sổ đang focus để áp dụng input mode mapping:
+Engine theo dõi cửa sổ đang focus để áp dụng per-app input mode mapping:
 - **X11**: `x11_introspector.c` → `x11GetFocusWindowClass()` (XGetInputFocus + XFetchName)
-- **Wayland (non-GNOME)**: `wl_introspector.go` → `wlGetFocusWindowClass()` (wlr-foreign-toplevel protocol)
-- **GNOME**: `gnome_introspector.go` → D-Bus `org.gnome.Shell` để lấy focused app
+- **Wayland wlroots** (Sway/Hyprland): `wl_introspector.go` → `zwlr_foreign_toplevel_v1` protocol. `wlAppId` được ghi bởi goroutine riêng qua `atomic.Pointer` để tránh data race.
+- **GNOME Wayland**: `gnome_introspector.go` → `org.gnome.Shell.Eval`. **Bị restrict từ GNOME 41+** — in warning một lần, fall back về X11/XWayland. KDE Plasma Wayland chưa được hỗ trợ.
+
+**Wayland limitations:**
+- Mouse capture (X11 Record/XTest) bị disable trên Wayland (`!isWayland` guard)
+- `XTestFakeKeyEventIM` không hoạt động trên pure Wayland — dùng `SurroundingTextIM` thay thế
+- `ForwardAsCommitIM` dùng `keyCode=0` cho Vietnamese chars — KDE Wayland có thể reject, dùng `SurroundingTextIM`
 
 ### 5. X11 Native Layer (`x11.go` + C files)
-CGo bridge cho các thao tác cần X11 native:
+CGo bridge cho các thao tác cần X11 native — **chỉ hoạt động trên X11, không có trên pure Wayland**:
 - **Clipboard**: `x11Copy()`, `x11Paste()` — x11_clipboard.c
 - **Fake key**: `x11SendBackspace()`, `x11SendShiftLeft()` — x11_keyboard.c (XTest extension)
-- **Mouse capture**: `mouse_capture_init/exit/unlock()` — x11_mouse.c
+- **Mouse capture**: `mouse_capture_init/exit/unlock()` — x11_mouse.c (guarded by `!isWayland`)
 - **Key recording**: X11 Record extension — x11_record.c (detect keypress globally)
 
 ### 6. MacroTable (`mactab.go`)
