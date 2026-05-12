@@ -113,7 +113,11 @@ func (e *Engine) updatePreedit(processedStr string) {
 	if e.config.IBflags&config.IBnoUnderline == 0 {
 		ibusText.AppendAttr(ibus.IBUS_ATTR_TYPE_UNDERLINE, ibus.IBUS_ATTR_UNDERLINE_SINGLE, 0, preeditLen)
 	}
-	e.UpdatePreeditTextWithMode(ibusText, preeditLen, true, ibus.IBUS_ENGINE_PREEDIT_COMMIT)
+	// Use PREEDIT_CLEAR: FocusOut now explicitly commits via resetBuffer(), so
+	// we no longer need the client to auto-commit on reset. PREEDIT_COMMIT was the
+	// root cause of the "ghost word" bug where Chromium/Electron re-inserted the
+	// last word into a cleared textbox after a form was submitted.
+	e.UpdatePreeditTextWithMode(ibusText, preeditLen, true, ibus.IBUS_ENGINE_PREEDIT_CLEAR)
 }
 
 func (e *Engine) getBambooInputMode() bamboo.Mode {

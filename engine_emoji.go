@@ -129,9 +129,9 @@ func (e *Engine) emojiProcessKeyEvent(keyVal uint32, keyCode uint32, state uint3
 	cps := e.emoji.Query(e.spellEmojiTrie)
 	if cps != nil {
 		codePoint0 := cps[0]
-		e.UpdatePreeditTextWithMode(ibus.NewText(codePoint0), uint32(len(codePoint0)), true, ibus.IBUS_ENGINE_PREEDIT_COMMIT)
+		e.UpdatePreeditTextWithMode(ibus.NewText(codePoint0), uint32(len(codePoint0)), true, ibus.IBUS_ENGINE_PREEDIT_CLEAR)
 	} else {
-		e.UpdatePreeditTextWithMode(ibus.NewText(raw), uint32(rawTextLen), true, ibus.IBUS_ENGINE_PREEDIT_COMMIT)
+		e.UpdatePreeditTextWithMode(ibus.NewText(raw), uint32(rawTextLen), true, ibus.IBUS_ENGINE_PREEDIT_CLEAR)
 	}
 	e.UpdateAuxiliaryText(ibus.NewText(raw), true)
 	lt := ibus.NewLookupTable()
@@ -168,7 +168,7 @@ func (e *Engine) updateEmojiLookupTable() {
 	var cps = e.emoji.Query(e.spellEmojiTrie)
 	if pos := e.emojiLookupTable.CursorPos; pos < uint32(len(cps)) {
 		var codePoint0 = cps[pos]
-		e.UpdatePreeditTextWithMode(ibus.NewText(codePoint0), uint32(len(codePoint0)), true, ibus.IBUS_ENGINE_PREEDIT_COMMIT)
+		e.UpdatePreeditTextWithMode(ibus.NewText(codePoint0), uint32(len(codePoint0)), true, ibus.IBUS_ENGINE_PREEDIT_CLEAR)
 	}
 }
 
@@ -182,7 +182,7 @@ func (e *Engine) commitEmojiCandidate() {
 func (e *Engine) refreshEmojiCandidate() {
 	var raw = e.emoji.GetRawString()
 	var rawTextLen = len([]rune(raw))
-	e.UpdatePreeditTextWithMode(ibus.NewText(raw), uint32(rawTextLen), true, ibus.IBUS_ENGINE_PREEDIT_COMMIT)
+	e.UpdatePreeditTextWithMode(ibus.NewText(raw), uint32(rawTextLen), true, ibus.IBUS_ENGINE_PREEDIT_CLEAR)
 	e.UpdateAuxiliaryText(ibus.NewText(raw), true)
 	e.updateEmojiLookupTable()
 }
