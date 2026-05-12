@@ -22,7 +22,6 @@ package main
 import (
 	"fmt"
 	"os/exec"
-	"reflect"
 	"strconv"
 	"sync"
 
@@ -196,27 +195,36 @@ func (e *Engine) SetSurroundingText(text dbus.Variant, cursorPos uint32, anchorP
 	}
 	e.Lock()
 	defer func() {
-		e.Unlock()
 		e.isSurroundingTextReady = false
-		if err := recover(); err != nil {
-			fmt.Println(err)
-		}
+		e.Unlock()
 	}()
-	if e.inBackspaceWhiteList() {
-		var str = reflect.ValueOf(reflect.ValueOf(text.Value()).Index(2).Interface()).String()
-		var s = []rune(str)
-		if len(s) < int(cursorPos) {
-			return nil
+	if !e.inBackspaceWhiteList() {
+		return nil
+	}
+	// IBusText D-Bus layout: (sa{sv}su)
+	// Deserializes as []interface{}{typeName, attachments, textString, attrList}
+	// We extract index 2 (the text string) without reflection to avoid panics on
+	// unexpected IBus/GTK versions that may vary the serialization.
+	vals, ok := text.Value().([]interface{})
+	if !ok || len(vals) < 3 {
+		return nil
+	}
+	str, ok := vals[2].(string)
+	if !ok {
+		return nil
+	}
+	s := []rune(str)
+	if len(s) < int(cursorPos) {
+		return nil
+	}
+	cs := s[:cursorPos]
+	e.preeditor.Reset()
+	for i := len(cs) - 1; i >= 0; i-- {
+		// Replace punctuation marks with space for spell-check compatibility.
+		if bamboo.IsPunctuationMark(cs[i]) && e.preeditor.CanProcessKey(cs[i]) {
+			cs[i] = ' '
 		}
-		var cs = s[:cursorPos]
-		e.preeditor.Reset()
-		for i := len(cs) - 1; i >= 0; i-- {
-			// workaround for spell checking
-			if bamboo.IsPunctuationMark(cs[i]) && e.preeditor.CanProcessKey(cs[i]) {
-				cs[i] = ' '
-			}
-			e.preeditor.ProcessKey(cs[i], bamboo.EnglishMode|bamboo.InReverseOrder)
-		}
+		e.preeditor.ProcessKey(cs[i], bamboo.EnglishMode|bamboo.InReverseOrder)
 	}
 	return nil
 }
