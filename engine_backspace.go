@@ -328,9 +328,14 @@ func (e *Engine) bsCommitText(rs []rune) {
 		return
 	}
 	if e.checkInputMode(config.ForwardAsCommitIM) {
-		log.Println("Forward as commit", string(rs))
+		// ForwardAsCommitIM is needed for apps that cannot handle IBus CommitText
+		// (some legacy Qt apps). We forward individual key events per rune.
+		// keyCode (hardware scancode) is 0 because Vietnamese accented characters
+		// (ổ, đ, …) have no physical key — this is acceptable per Wayland spec
+		// (wl_keyboard.key allows keyCode=0 for synthetic events). Some KDE Plasma
+		// versions may mishandle this; prefer SurroundingTextIM on KDE Wayland.
 		for _, chr := range rs {
-			var keyVal = vnSymMapping[chr]
+			keyVal := vnSymMapping[chr]
 			if keyVal == 0 {
 				keyVal = uint32(chr)
 			}

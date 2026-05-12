@@ -57,6 +57,10 @@ type Engine struct {
 	lastCommitText         int64
 	shouldRestoreKeyStrokes bool
 	shouldEnqueueKeyStrokes bool
+	// lastKeyCode stores the hardware scancode from the most recent ProcessKeyEvent.
+	// Used when forwarding key events back to the application so the scancode is
+	// valid (keyCode=0 is rejected by some Wayland compositors for non-Unicode keys).
+	lastKeyCode uint32
 	// openGUI is injected by the factory so the engine does not import the ui package directly.
 	openGUI func(engineName string)
 	// per-engine lazy-loaded resources (replacing package-level globals)
@@ -104,6 +108,7 @@ func (e *Engine) ProcessKeyEvent(keyVal uint32, keyCode uint32, state uint32) (b
 	if state&IBusReleaseMask != 0 {
 		return false, nil
 	}
+	e.lastKeyCode = keyCode
 	if ret, retValue := e.processShortcutKey(keyVal, keyCode, state); ret {
 		return retValue, nil
 	}
