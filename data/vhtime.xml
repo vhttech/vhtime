@@ -36,7 +36,7 @@
             <author>Fx Phúc Vinh &lt;vinhhp@vhttech.com&gt;</author>
             <icon>/usr/share/ibus-vhtime/icons/vi.svg</icon>
             <layout>default</layout>
-            <longname>Vietnamese (vhtime)</longname>
+            <longname>vhtime</longname>
             <description>Vietnamese input method editor</description>
             <setup>/usr/lib/ibus-vhtime/ibus-engine-vhtime -gui</setup>
             <rank>1</rank>
