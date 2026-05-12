@@ -9,10 +9,10 @@ extern int openGUI(guint flags, int mode, guint32 *s, int size, char *mtext, cha
 import "C"
 import (
 	"encoding/json"
-	"vhtime/config"
-	"io/ioutil"
 	"os"
 	"unsafe"
+
+	"vhtime/config"
 )
 
 var engineName string
@@ -33,7 +33,7 @@ func saveConfigText(text *C.char) {
 		cfgText = C.GoString(text)
 		cfgFn   = config.GetConfigPath(engineName)
 	)
-	err := ioutil.WriteFile(cfgFn, []byte(cfgText), 0644)
+	err := os.WriteFile(cfgFn, []byte(cfgText), 0644)
 	if err != nil {
 		panic(err)
 	}
@@ -45,7 +45,7 @@ func saveMacroText(text *C.char) {
 		macroText = C.GoString(text)
 		macroFP   = config.GetMacroPath(engineName)
 	)
-	err := ioutil.WriteFile(macroFP, []byte(macroText), 0644)
+	err := os.WriteFile(macroFP, []byte(macroText), 0644)
 	if err != nil {
 		panic(err)
 	}
@@ -88,7 +88,7 @@ func OpenGUI(engName string) {
 		size          = len(shortcuts)
 		macroFilePath = config.GetMacroPath(engineName)
 	)
-	mText, err := ioutil.ReadFile(macroFilePath)
+	mText, err := os.ReadFile(macroFilePath)
 	if err != nil {
 		panic(err)
 	}

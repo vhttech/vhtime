@@ -94,11 +94,8 @@ This function gets called whenever a key is pressed.
 */
 func (e *IBusBambooEngine) ProcessKeyEvent(keyVal uint32, keyCode uint32, state uint32) (bool, *dbus.Error) {
 	if state&IBusReleaseMask != 0 {
-		// fmt.Println("Ignore key-up event")
 		return false, nil
 	}
-	fmt.Printf("\n")
-	log.Printf(">>>>ProcessKeyEvent >  %d | state %d keyVal 0x%04x | %c <<<<\n", len(keyPressChan), state, keyVal, rune(keyVal))
 	if ret, retValue := e.processShortcutKey(keyVal, keyCode, state); ret {
 		return retValue, nil
 	}
@@ -109,7 +106,6 @@ func (e *IBusBambooEngine) ProcessKeyEvent(keyVal uint32, keyCode uint32, state 
 }
 
 func (e *IBusBambooEngine) FocusIn() *dbus.Error {
-	log.Print("FocusIn.")
 	var latestWm = e.getLatestWmClass()
 	e.checkWmClass(latestWm)
 	e.RegisterProperties(e.propList)
@@ -129,7 +125,6 @@ func (e *IBusBambooEngine) FocusIn() *dbus.Error {
 	} else if e.config.IBflags&config.IBmouseCapturing != 0 {
 		startMouseCapturing()
 	}
-	fmt.Printf("WM_CLASS=(%s)\n", e.getWmClass())
 	return nil
 }
 
@@ -139,7 +134,6 @@ func (e *IBusBambooEngine) FocusOut() *dbus.Error {
 }
 
 func (e *IBusBambooEngine) Reset() *dbus.Error {
-	fmt.Print("Reset.\n")
 	if e.checkInputMode(config.PreeditIM) {
 		e.commitPreeditAndReset(e.getPreeditString())
 	}
@@ -147,20 +141,17 @@ func (e *IBusBambooEngine) Reset() *dbus.Error {
 }
 
 func (e *IBusBambooEngine) Enable() *dbus.Error {
-	fmt.Print("Enable.")
 	e.RequireSurroundingText()
 	return nil
 }
 
 func (e *IBusBambooEngine) Disable() *dbus.Error {
-	fmt.Print("Disable.")
 	return nil
 }
 
 // @method(in_signature="vuu")
 func (e *IBusBambooEngine) SetSurroundingText(text dbus.Variant, cursorPos uint32, anchorPos uint32) *dbus.Error {
 	if !e.isSurroundingTextReady {
-		//fmt.Println("Surrounding Text is not ready yet.")
 		return nil
 	}
 	e.Lock()
@@ -178,7 +169,6 @@ func (e *IBusBambooEngine) SetSurroundingText(text dbus.Variant, cursorPos uint3
 			return nil
 		}
 		var cs = s[:cursorPos]
-		fmt.Println("Surrounding Text: ", string(cs))
 		e.preeditor.Reset()
 		for i := len(cs) - 1; i >= 0; i-- {
 			// workaround for spell checking

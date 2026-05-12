@@ -20,12 +20,12 @@
 package main
 
 import (
-	"fmt"
-	"vhtime/config"
 	"log"
 	"strings"
 	"time"
 	"unicode/utf8"
+
+	"vhtime/config"
 
 	"github.com/BambooEngine/bamboo-core"
 	"github.com/godbus/dbus/v5"
@@ -103,7 +103,6 @@ func (e *IBusBambooEngine) keyPressForwardHandler(keyVal, keyCode, state uint32)
 }
 
 func (e *IBusBambooEngine) keyPressHandler(keyVal, keyCode, state uint32) bool {
-	// log.Printf(">>Backspace:ProcessKeyEvent >  %c | keyCode 0x%04x keyVal 0x%04x | %d\n", rune(keyVal), keyCode, keyVal, len(keyPressChan))
 	defer e.updateLastKeyWithShift(keyVal, state)
 	if e.keyPressDelay > 0 {
 		time.Sleep(time.Duration(e.keyPressDelay) * time.Millisecond)
@@ -141,7 +140,6 @@ func (e *IBusBambooEngine) keyPressHandler(keyVal, keyCode, state uint32) bool {
 	newText, isWordBreakRune := e.getCommitText(keyVal, keyCode, state)
 	if len(newText) > 0 {
 		if e.shouldAppendDeadKey(newText, oldText) {
-			fmt.Println("Append a deadkey")
 			e.bsCommitText([]rune(" "))
 			time.Sleep(10 * time.Millisecond)
 			e.isFirstTimeSendingBS = false
@@ -246,8 +244,6 @@ func (e *IBusBambooEngine) batchCommit(oldText string, newText string, nBackSpac
 		var offset = utf8.RuneCountInString(oldText) - nBackSpace
 		patchedRunes = fullRunes[offset:]
 	}
-	log.Printf("\nUpdating Previous Text %s ---> %s\n", oldText, newText)
-	fmt.Print("====================================\n\n")
 	e.bsCommitText(patchedRunes)
 }
 
@@ -319,7 +315,7 @@ func (e *IBusBambooEngine) SendBackSpace(n int) {
 		}
 		time.Sleep(time.Duration(n) * (30 + BACKSPACE_INTERVAL) * time.Millisecond)
 	} else {
-		fmt.Println("There's something wrong with wmClasses")
+		log.Println("SendBackSpace: unknown input mode, wmClasses may be empty")
 	}
 }
 

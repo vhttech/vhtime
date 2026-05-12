@@ -21,9 +21,6 @@ package main
 
 import (
 	"fmt"
-	"vhtime/config"
-	"vhtime/ui"
-	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
@@ -32,6 +29,9 @@ import (
 	"time"
 	"unicode"
 	"unicode/utf8"
+
+	"vhtime/config"
+	"vhtime/ui"
 
 	"github.com/BambooEngine/bamboo-core"
 	ibus "github.com/BambooEngine/goibus"
@@ -47,7 +47,6 @@ func GetIBusEngineCreator() func(*dbus.Conn, string) dbus.ObjectPath {
 	return func(conn *dbus.Conn, ngName string) dbus.ObjectPath {
 		var ngGroupName = strings.Split(ngName, "::")[0]
 		var engineName = strings.ToLower(ngGroupName)
-		fmt.Printf("Got engine name: %s", engineName)
 		var cfg = config.LoadConfig(engineName)
 		var objectPath = dbus.ObjectPath(fmt.Sprintf("/org/freedesktop/IBus/Engine/%s/%d", engineName, time.Now().UnixNano()))
 		var inputMethod = bamboo.ParseInputMethod(cfg.InputMethodDefinitions, cfg.InputMethod)
@@ -112,7 +111,6 @@ func (e *IBusBambooEngine) init() {
 			e.resetBuffer()
 			e.keyPressDelay = KeypressDelayMs
 			if e.capabilities&IBusCapSurroundingText != 0 {
-				//e.ForwardKeyEvent(IBUS_Shift_R, XK_Shift_R-8, 0)
 				x11SendShiftR()
 				e.isSurroundingTextReady = true
 				e.keyPressDelay = KeypressDelayMs * 10
@@ -131,11 +129,11 @@ func initConfigFiles(engineName string) {
 	macroPath := config.GetMacroPath(engineName)
 	if _, err := os.Stat(macroPath); os.IsNotExist(err) {
 		sampleFile := getEngineSubFile(sampleMactabFile)
-		sample, err := ioutil.ReadFile(sampleFile)
+		sample, err := os.ReadFile(sampleFile)
 		if err != nil {
 			panic(err)
 		}
-		err = ioutil.WriteFile(macroPath, sample, 0644)
+		err = os.WriteFile(macroPath, sample, 0644)
 		if err != nil {
 			panic(err)
 		}
@@ -192,7 +190,6 @@ func (e *IBusBambooEngine) isShortcutKeyPressed(keyVal, state uint32, shortcut u
 	lowerKey := uint32(unicode.ToLower(rune(keyVal)))
 	shortcuts := e.config.Shortcuts[shortcut : shortcut+2]
 	ret := shortcuts[0] == realState && shortcuts[1] == lowerKey
-	// fmt.Println("...isShortcutKeyPressed=", ret, ret && !e.lastKeyWithShift, shortcuts)
 	if realState == 1 && shortcut == KSViEnSwitch {
 		return ret && !e.lastKeyWithShift
 	}
@@ -203,7 +200,6 @@ func (e *IBusBambooEngine) processShortcutKey(keyVal, keyCode, state uint32) (bo
 	if keyVal == IBusCapsLock {
 		return true, false
 	}
-	// fmt.Println("===Process shortcut for emoji selector")
 	if e.isShortcutKeyPressed(keyVal, state, KSEmojiDialog) &&
 		!e.isEmojiLTOpened {
 		e.resetBuffer()
@@ -215,7 +211,6 @@ func (e *IBusBambooEngine) processShortcutKey(keyVal, keyCode, state uint32) (bo
 	if e.isEmojiLTOpened {
 		return true, e.emojiProcessKeyEvent(keyVal, keyCode, state)
 	}
-	// fmt.Println("====== Process hexadecimal key pressed")
 	if e.isShortcutKeyPressed(keyVal, state, KSHexadecimal) {
 		e.resetBuffer()
 		e.isInHexadecimal = true
@@ -235,18 +230,15 @@ func (e *IBusBambooEngine) processShortcutKey(keyVal, keyCode, state uint32) (bo
 		return true, false
 	}
 	if e.isShortcutKeyPressed(keyVal, state, KSRestoreKeyStrokes) {
-		// fmt.Println("===== Process restoring key strokes")
 		e.shouldRestoreKeyStrokes = true
 		return false, false
 	}
-	// fmt.Println("===Process shortcut for input method switcher")
 	if e.isShortcutKeyPressed(keyVal, state, KSViEnSwitch) {
 		e.englishMode = !e.englishMode
 		notify(e.englishMode)
 		e.resetBuffer()
 		return true, true
 	}
-	// fmt.Println("====== Process shortcut for input mode switch")
 	if e.isInputModeLTOpened {
 		return e.ltProcessKeyEvent(keyVal, keyCode, state)
 	} else if e.isShortcutKeyPressed(keyVal, state, KSInputModeSwitch) &&
