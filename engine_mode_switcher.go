@@ -10,9 +10,14 @@ import (
 )
 
 func (e *Engine) getInputMode() int {
-	if e.getWmClass() != "" {
-		if im, ok := e.config.InputModeMapping[e.getWmClass()]; ok && config.ImLookupTable[im] != "" {
+	wmClass := e.getWmClass()
+	if wmClass != "" {
+		if im, ok := e.config.InputModeMapping[wmClass]; ok && config.ImLookupTable[im] != "" {
 			return im
+		}
+		// GPU terminals on X11 don't support XIM/IBus preedit; fall back to XTest.
+		if !isWayland && inStringList(x11NonXimTerminals, wmClass) {
+			return config.XTestFakeKeyEventIM
 		}
 	}
 	if _, ok := config.ImLookupTable[e.config.DefaultInputMode]; ok {

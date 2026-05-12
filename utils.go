@@ -75,6 +75,18 @@ var DefaultBrowserList = []string{
 	"chromium-browser:Chromium-browser",
 }
 
+// x11NonXimTerminals lists GPU/modern terminals that bypass XIM on X11.
+// PreeditIM is silent in these apps; XTestFakeKeyEventIM is used instead.
+var x11NonXimTerminals = []string{
+	"kitty:kitty",
+	"kitty",
+	"Alacritty:Alacritty",
+	"alacritty:alacritty",
+	"org.wezfurlong.wezterm",
+	"wezterm-gui:org.wezfurlong.wezterm",
+	"rio:rio",
+}
+
 
 func getEngineSubFile(fileName string) string {
 	if _, err := os.Stat(fileName); err == nil {
