@@ -260,59 +260,61 @@ func (e *Engine) getOffsetRunes(newText, oldText string) ([]rune, int) {
 	return newRunes[offset:], nBackSpace
 }
 
+// SendBackSpace erases n characters via the mechanism appropriate for the current
+// input mode. Timing delays are intentional — GTK/Qt have a sync issue between
+// fake backspaces and committed text; removing or shortening the delays causes
+// dropped or mis-ordered characters.
 func (e *Engine) SendBackSpace(n int) {
-	// Gtk/Qt apps have a serious sync issue with fake backspaces
-	// and normal string committing, so we'll not commit right now
-	// but delay until all the sent backspaces got processed.
-	var now = time.Now()
-	var delta = 50*1000*1000 - (now.UnixNano() - e.lastCommitText)
-	if delta > 0 {
+	// Wait until at least 50 ms have passed since the last CommitText to avoid
+	// the GTK/Qt sync issue.
+	if delta := 50*1000*1000 - (time.Now().UnixNano() - e.lastCommitText); delta > 0 {
 		time.Sleep(time.Duration(delta) * time.Nanosecond)
 	}
-	if e.checkInputMode(config.XTestFakeKeyEventIM) {
+
+	mode := e.getInputMode()
+	log.Printf("SendBackSpace: n=%d mode=%d\n", n, mode)
+
+	switch mode {
+	case config.XTestFakeKeyEventIM:
 		e.setFakeBackspace(int32(n))
-		waitFakeBS := func() {
-			for count := 0; e.getFakeBackspace() > 0 && count < 10; count++ {
-				time.Sleep(5 * time.Millisecond)
-			}
-		}
-		log.Printf("Sendding %d backspace via XTestFakeKeyEvent\n", n)
 		time.Sleep(10 * time.Millisecond)
 		x11SendBackspace(n, 0)
-		waitFakeBS()
+		// Poll until XTest events have been processed by the application.
+		for count := 0; e.getFakeBackspace() > 0 && count < 10; count++ {
+			time.Sleep(5 * time.Millisecond)
+		}
 		time.Sleep(time.Duration(n) * (10 + BACKSPACE_INTERVAL) * time.Millisecond)
-	} else if e.checkInputMode(config.SurroundingTextIM) {
+
+	case config.SurroundingTextIM:
 		time.Sleep(20 * time.Millisecond)
-		log.Printf("Sendding %d backspace via SurroundingText\n", n)
 		e.DeleteSurroundingText(-int32(n), uint32(n))
 		time.Sleep(20 * time.Millisecond)
-	} else if e.checkInputMode(config.ForwardAsCommitIM) {
+
+	case config.ForwardAsCommitIM:
 		time.Sleep(20 * time.Millisecond)
-		log.Printf("Sendding %d backspace via forwardAsCommitIM\n", n)
 		for i := 0; i < n; i++ {
 			e.ForwardKeyEvent(IBusBackSpace, XkBackspace-8, 0)
 			e.ForwardKeyEvent(IBusBackSpace, XkBackspace-8, IBusReleaseMask)
 		}
 		time.Sleep(time.Duration(n) * (20 + BACKSPACE_INTERVAL) * time.Millisecond)
-	} else if e.checkInputMode(config.ShiftLeftForwardingIM) {
-		time.Sleep(30 * time.Millisecond)
-		log.Printf("Sendding %d Shift+Left via shiftLeftForwardingIM\n", n)
 
+	case config.ShiftLeftForwardingIM:
+		time.Sleep(30 * time.Millisecond)
 		for i := 0; i < n; i++ {
 			e.ForwardKeyEvent(IBusLeft, XkLeft-8, IBusShiftMask)
 			e.ForwardKeyEvent(IBusLeft, XkLeft-8, IBusReleaseMask)
 		}
 		time.Sleep(time.Duration(n) * (30 + BACKSPACE_INTERVAL) * time.Millisecond)
-	} else if e.checkInputMode(config.BackspaceForwardingIM) {
-		time.Sleep(30 * time.Millisecond)
-		log.Printf("Sendding %d backspace via backspaceForwardingIM\n", n)
 
+	case config.BackspaceForwardingIM:
+		time.Sleep(30 * time.Millisecond)
 		for i := 0; i < n; i++ {
 			e.ForwardKeyEvent(IBusBackSpace, XkBackspace-8, 0)
 			e.ForwardKeyEvent(IBusBackSpace, XkBackspace-8, IBusReleaseMask)
 		}
 		time.Sleep(time.Duration(n) * (30 + BACKSPACE_INTERVAL) * time.Millisecond)
-	} else {
+
+	default:
 		log.Println("SendBackSpace: unknown input mode, wmClasses may be empty")
 	}
 }
