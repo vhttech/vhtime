@@ -1,5 +1,5 @@
 {
-  description = "A flake for ibus-bamboo";
+  description = "A flake for ibus-vhtime";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
@@ -22,7 +22,7 @@
         in
         {
           default = pkgs.stdenv.mkDerivation {
-            pname = "ibus-bamboo";
+            pname = "ibus-vhtime";
             inherit version;
 
             src = ./.;
@@ -39,7 +39,7 @@
 
             preConfigure = ''
               export GOCACHE="$TMPDIR/go-cache"
-              sed -i "s,/usr,$out," data/bamboo.xml
+              sed -i "s,/usr,$out," data/vhtime.xml
             '';
 
             makeFlags = [

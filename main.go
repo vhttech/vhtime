@@ -1,5 +1,5 @@
 /*
- * Bamboo - A Vietnamese Input method editor
+ * vhtime - A Vietnamese Input method editor
  * Copyright (C) 2018 Luong Thanh Lam <ltlam93@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -30,8 +30,8 @@ import (
 )
 
 const (
-	ComponentName = "org.freedesktop.IBus.bamboo"
-	EngineName    = "Bamboo"
+	ComponentName = "org.freedesktop.IBus.vhtime"
+	EngineName    = "Vhtime"
 )
 
 var embedded = flag.Bool("ibus", false, "Run the embedded ibus component")

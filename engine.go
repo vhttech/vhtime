@@ -1,5 +1,5 @@
 /*
- * Bamboo - A Vietnamese Input method editor
+ * vhtime - A Vietnamese Input method editor
  * Copyright (C) 2018 Luong Thanh Lam <ltlam93@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -31,8 +31,8 @@ import (
 	ibus "github.com/BambooEngine/goibus"
 	"github.com/godbus/dbus/v5"
 
-	"ibus-bamboo/config"
-	"ibus-bamboo/ui"
+	"vhtime/config"
+	"vhtime/ui"
 )
 
 type IBusBambooEngine struct {

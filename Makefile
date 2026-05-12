@@ -1,5 +1,5 @@
 #
-# Bamboo - A Vietnamese Input method editor
+# vhtime - A Vietnamese Input method editor
 # Copyright (C) 2018 Luong Thanh Lam <ltlam93@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -19,8 +19,8 @@
 CC=cc
 SHELL=sh
 
-engine_name=bamboo
-engine_gui_name=ibus-setup-Bamboo.desktop
+engine_name=vhtime
+engine_gui_name=ibus-setup-Vhtime.desktop
 ibus_e_name=ibus-engine-$(engine_name)
 pkg_name=ibus-$(engine_name)
 version=0.8.4
@@ -44,12 +44,12 @@ test:
 	$(SHELL) scripts/test
 
 clean:
-	rm -f ibus-engine-bamboo
+	rm -f ibus-engine-vhtime
 	rm -f *_linux *_cover.html go_test_* go_build_* test *.gz test
 	rm -f debian/files
 	rm -rf debian/debhelper*
 	rm -rf debian/.debhelper
-	rm -rf debian/ibus-bamboo*
+	rm -rf debian/ibus-vhtime*
 
 
 install: build

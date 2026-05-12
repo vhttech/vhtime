@@ -1,11 +1,11 @@
 #!/bin/bash
 set_default() {
 	ibus restart
-	echo -n "Bạn có muốn đặt ibus-bamboo làm bộ gõ Tiếng Việt mặc định? [y/n]: "
+	echo -n "Bạn có muốn đặt ibus-vhtime làm bộ gõ Tiếng Việt mặc định? [y/n]: "
 	read choice
 	case $choice in
 		"y")
-			env DCONF_PROFILE=ibus dconf write /desktop/ibus/general/preload-engines "['xkb:us::eng', 'Bamboo']" && gsettings set org.gnome.desktop.input-sources sources "[('xkb', 'us'), ('ibus', 'Bamboo')]"
+			env DCONF_PROFILE=ibus dconf write /desktop/ibus/general/preload-engines "['xkb:us::eng', 'Vhtime']" && gsettings set org.gnome.desktop.input-sources sources "[('xkb', 'us'), ('ibus', 'Vhtime')]"
 			exit -1;;
 		*) exit -1;;
 	esac
@@ -22,19 +22,19 @@ echo -n "Lựa chọn (1/2/3/4/5/6/7): "
 read choice
 case $choice in
 	"1")
-		if yay -S ibus-bamboo; then
+		if yay -S ibus-vhtime; then
 			set_default
 		fi
 		exit -1;;
 	"2")
 		echo -n Password:
 		read -s szPassword
-		if echo $szPassword | echo && sudo -S pacman -S --noconfirm chaotic-aur/ibus-bamboo-git; then
+		if echo $szPassword | echo && sudo -S pacman -S --noconfirm chaotic-aur/ibus-vhtime-git; then
 			set_default
 		fi
 		exit -1;;
 	"3")
-		if pamac build ibus-bamboo; then
+		if pamac build ibus-vhtime; then
 			set_default
 		fi
 		exit -1;;
@@ -48,7 +48,7 @@ case $choice in
 		echo $szPassword | sudo -S pacman-key --init
 		echo $szPassword | sudo -S pacman-key --add - <<< "${key}"
 		echo $szPassword | sudo -S pacman-key --lsign-key "${fingerprint}"
-		if sudo -S pacman -Sy home_lamlng_Arch/ibus-bamboo; then
+		if sudo -S pacman -Sy home_lamlng_Arch/ibus-vhtime; then
 			set_default
 		fi
 		exit -1;;
@@ -57,23 +57,23 @@ case $choice in
 	*) exit -1;;
 esac
 
-if [ -d ibus-bamboo ]; then
-	echo "Tìm thấy thư mục tên ibus-bamboo, đổi tên thành ibus-bamboo-bak"
-        mv ibus-bamboo ibus-bamboo-bak
+if [ -d ibus-vhtime ]; then
+	echo "Tìm thấy thư mục tên ibus-vhtime, đổi tên thành ibus-vhtime-bak"
+        mv ibus-vhtime ibus-vhtime-bak
 fi
 
-if [ -f ibus-bamboo ]; then
-	echo "Tìm thấy file tên ibus-bamboo, đổi tên thành ibus-bamboo~"
-        mv ibus-bamboo ibus-bamboo~
+if [ -f ibus-vhtime ]; then
+	echo "Tìm thấy file tên ibus-vhtime, đổi tên thành ibus-vhtime~"
+        mv ibus-vhtime ibus-vhtime~
 fi
 
-mkdir ibus-bamboo
-cd ibus-bamboo
-wget "https://raw.githubusercontent.com/BambooEngine/ibus-bamboo/master/build/arch/PKGBUILD-$VER" -O PKGBUILD
+mkdir ibus-vhtime
+cd ibus-vhtime
+wget "https://raw.githubusercontent.com/BambooEngine/ibus-vhtime/master/build/arch/PKGBUILD-$VER" -O PKGBUILD
 makepkg -si
 
 cd ..
-rm ibus-bamboo -rf
+rm ibus-vhtime -rf
 rm install.sh
 
 set_default

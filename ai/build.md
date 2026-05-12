@@ -11,7 +11,7 @@ make src         # Tạo tarball nguồn
 ```
 
 **scripts/build**:
-- Linux: `CGO_ENABLED=1 go build -o ibus-engine-bamboo -ldflags "-w -s -X main.Version=0.8.4" -mod=vendor`
+- Linux: `CGO_ENABLED=1 go build -o ibus-engine-vhtime -ldflags "-w -s -X main.Version=0.8.4" -mod=vendor`
 - FreeBSD: thêm `CGO_CFLAGS=-I/usr/local/include`, `CGO_LDFLAGS=-L/usr/local/lib`
 
 **Version**: inject lúc build qua `-X main.Version`, biến khai báo trong `version.go`.
@@ -50,7 +50,7 @@ make src         # Tạo tarball nguồn
 | Format | Thư mục | Ghi chú |
 |--------|---------|---------|
 | Arch Linux | `build/arch/` | PKGBUILD-git, PKGBUILD-obs, PKGBUILD-release |
-| RPM | `build/rpm/ibus-bamboo.spec` | rpmbuild |
+| RPM | `build/rpm/ibus-vhtime.spec` | rpmbuild |
 | DEB | `build/deb/` | dpkg-buildpackage |
 | OBS | `scripts/osc.bash` | OpenSUSE Build Service |
 | Nix | `flake.nix` + `flake.lock` | Nix flake |
@@ -62,9 +62,9 @@ make install PREFIX=/usr DESTDIR=/tmp/pkg
 ```
 
 **scripts/install** đặt file vào:
-- `$PREFIX/share/ibus-bamboo/` — data files (bamboo.xml, dict, emoji, desktop)
-- `$PREFIX/lib/ibus-bamboo/` — binary `ibus-engine-bamboo`
-- `$PREFIX/share/ibus/component/bamboo.xml` — đăng ký engine với IBus
+- `$PREFIX/share/ibus-vhtime/` — data files (vhtime.xml, dict, emoji, desktop)
+- `$PREFIX/lib/ibus-vhtime/` — binary `ibus-engine-vhtime`
+- `$PREFIX/share/ibus/component/vhtime.xml` — đăng ký engine với IBus
 
 ## Vendor
 

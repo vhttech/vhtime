@@ -8,14 +8,14 @@ type Config struct {
     InputMethodDefinitions map[string]bamboo.InputMethodDefinition
     OutputCharset          string                              // "Unicode", "TCVN3", "VNI", ...
     Flags                  uint                                // bamboo-core flags (spell check, ...)
-    IBflags                uint                                // ibus-bamboo feature flags (xem bên dưới)
+    IBflags                uint                                // ibus-vhtime feature flags (xem bên dưới)
     Shortcuts              [10]uint32                          // 5 phím tắt, mỗi phím 2 uint32 (keyVal + mask)
     DefaultInputMode       int                                 // InputMode mặc định
     InputModeMapping       map[string]int                      // wmClass → InputMode override
 }
 ```
 
-**Lưu tại**: `~/.config/ibus-bamboo/ibus-bamboo.config.json`
+**Lưu tại**: `~/.config/ibus-vhtime/ibus-vhtime.config.json`
 
 **Default**:
 - InputMethod: `"Telex"`
@@ -88,7 +88,7 @@ PropKeyAutoCapitalizeMacro
 
 ## Macro File
 
-**Path**: `~/.config/ibus-bamboo/ibus-bamboo.macro.text`
+**Path**: `~/.config/ibus-vhtime/ibus-vhtime.macro.text`
 
 **Format** (mỗi dòng): `keyword:replacement`
 

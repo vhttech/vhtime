@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~ Bamboo - A Vietnamese Input method editor
+  ~ vhtime - A Vietnamese Input method editor
   ~ Copyright (C) 2018 Luong Thanh Lam <ltlam93@gmail.com>
   ~
   ~ This program is free software: you can redistribute it and/or modify
@@ -19,107 +19,107 @@
   -->
 
 <component>
-    <name>org.freedesktop.IBus.bamboo</name>
+    <name>org.freedesktop.IBus.vhtime</name>
     <description>Vietnamese input engine for IBus</description>
-    <exec>/usr/local/lib/ibus-bamboo/ibus-engine-bamboo --ibus</exec>
+    <exec>/usr/local/lib/ibus-vhtime/ibus-engine-vhtime --ibus</exec>
     <version>0.8.4</version>
     <author>Luong Thanh Lam &lt;ltlam93@gmail.com&gt;</author>
     <license>GPLv3</license>
-    <homepage>https://github.com/BambooEngine/ibus-bamboo/</homepage>
-    <textdomain>ibus-bamboo</textdomain>
+    <homepage>https://github.com/vhtech/ibus-vhtime/</homepage>
+    <textdomain>ibus-vhtime</textdomain>
     <engines>
           <engine>
               <symbol>vi</symbol>
-              <name>Bamboo</name>
+              <name>Vhtime</name>
               <language>vi</language>
               <license>GPLv3</license>
               <author>Luong Thanh Lam &lt;ltlam93@gmail.com&gt;</author>
-	      <icon>/usr/local/share/ibus-bamboo/icons/vi.svg</icon>
+	      <icon>/usr/local/share/ibus-vhtime/icons/vi.svg</icon>
               <layout>default</layout>
-              <longname>Bamboo</longname>
+              <longname>Vhtime</longname>
               <description>Vietnamese input method editor</description>
-	      <setup>/usr/local/lib/ibus-bamboo/ibus-engine-bamboo -gui</setup>
+	      <setup>/usr/local/lib/ibus-vhtime/ibus-engine-vhtime -gui</setup>
               <rank>1</rank>
           </engine>
           <engine>
               <symbol>vi</symbol>
-              <name>Bamboo::Us</name>
+              <name>Vhtime::Us</name>
               <language>vi</language>
               <license>GPLv3</license>
               <author>Luong Thanh Lam &lt;ltlam93@gmail.com&gt;</author>
-	      <icon>/usr/local/share/ibus-bamboo/icons/vi.svg</icon>
+	      <icon>/usr/local/share/ibus-vhtime/icons/vi.svg</icon>
               <layout>us</layout>
-              <longname>Bamboo (US layout)</longname>
+              <longname>Vhtime (US layout)</longname>
               <description>Vietnamese input method editor with US keyboard layout</description>
               <rank>1</rank>
-	      <setup>/usr/local/lib/ibus-bamboo/ibus-engine-bamboo -gui</setup>
+	      <setup>/usr/local/lib/ibus-vhtime/ibus-engine-vhtime -gui</setup>
           </engine>
 	  <!-- Vietnamese Icons -->
           <engine>
               <symbol>vi</symbol>
-              <name>Bamboo::Candy</name>
+              <name>Vhtime::Candy</name>
               <language>vi</language>
               <license>GPLv3</license>
               <author>Tran Duc Binh &lt;binhtran432k@gmail.com&gt;</author>
-	      <icon>/usr/local/share/ibus-bamboo/icons/vi-candy.svg</icon>
+	      <icon>/usr/local/share/ibus-vhtime/icons/vi-candy.svg</icon>
               <layout>default</layout>
-              <longname>Bamboo Candy</longname>
+              <longname>Vhtime Candy</longname>
               <description>Vietnamese input method editor with US keyboard layout with Candy Icon</description>
               <rank>1</rank>
-	      <setup>/usr/local/lib/ibus-bamboo/ibus-engine-bamboo -gui</setup>
+	      <setup>/usr/local/lib/ibus-vhtime/ibus-engine-vhtime -gui</setup>
           </engine>
           <engine>
               <symbol>vi</symbol>
-              <name>Bamboo::Flag</name>
+              <name>Vhtime::Flag</name>
               <language>vi</language>
               <license>GPLv3</license>
               <author>Tran Duc Binh &lt;binhtran432k@gmail.com&gt;</author>
-	      <icon>/usr/local/share/ibus-bamboo/icons/vi-flag.svg</icon>
+	      <icon>/usr/local/share/ibus-vhtime/icons/vi-flag.svg</icon>
               <layout>default</layout>
-              <longname>Bamboo Flag</longname>
+              <longname>Vhtime Flag</longname>
               <description>Vietnamese input method editor with US keyboard layout with Flag Icon</description>
               <rank>1</rank>
-	      <setup>/usr/local/lib/ibus-bamboo/ibus-engine-bamboo -gui</setup>
+	      <setup>/usr/local/lib/ibus-vhtime/ibus-engine-vhtime -gui</setup>
           </engine>
 	  <!-- English (US) Icons -->
           <engine>
               <symbol>en</symbol>
-              <name>BambooUs</name>
+              <name>VhtimeUs</name>
               <language>en</language>
               <license>GPLv3</license>
               <author>Tran Duc Binh &lt;binhtran432k@gmail.com&gt;</author>
-	      <icon>/usr/local/share/ibus-bamboo/icons/us.svg</icon>
+	      <icon>/usr/local/share/ibus-vhtime/icons/us.svg</icon>
               <layout>us</layout>
-              <longname>Bamboo English (US)</longname>
+              <longname>Vhtime English (US)</longname>
               <description>Vietnamese input method editor with US keyboard layout with US Normal Icon</description>
               <rank>2</rank>
-	      <setup>/usr/local/lib/ibus-bamboo/ibus-engine-bamboo -gui</setup>
+	      <setup>/usr/local/lib/ibus-vhtime/ibus-engine-vhtime -gui</setup>
           </engine>
           <engine>
               <symbol>en</symbol>
-              <name>BambooUs::Candy</name>
+              <name>VhtimeUs::Candy</name>
               <language>en</language>
               <license>GPLv3</license>
               <author>Tran Duc Binh &lt;binhtran432k@gmail.com&gt;</author>
-	      <icon>/usr/local/share/ibus-bamboo/icons/us-candy.svg</icon>
+	      <icon>/usr/local/share/ibus-vhtime/icons/us-candy.svg</icon>
               <layout>us</layout>
-              <longname>Bamboo English (US) Candy</longname>
+              <longname>Vhtime English (US) Candy</longname>
               <description>Vietnamese input method editor with US keyboard layout with US Candy Icon</description>
               <rank>2</rank>
-	      <setup>/usr/local/lib/ibus-bamboo/ibus-engine-bamboo -gui</setup>
+	      <setup>/usr/local/lib/ibus-vhtime/ibus-engine-vhtime -gui</setup>
           </engine>
           <engine>
               <symbol>en</symbol>
-              <name>BambooUs::Flag</name>
+              <name>VhtimeUs::Flag</name>
               <language>en</language>
               <license>GPLv3</license>
               <author>Tran Duc Binh &lt;binhtran432k@gmail.com&gt;</author>
-	      <icon>/usr/local/share/ibus-bamboo/icons/us-flag.svg</icon>
+	      <icon>/usr/local/share/ibus-vhtime/icons/us-flag.svg</icon>
               <layout>us</layout>
-              <longname>Bamboo English (US) Flag</longname>
+              <longname>Vhtime English (US) Flag</longname>
               <description>Vietnamese input method editor with US keyboard layout with US Flag Icon</description>
               <rank>2</rank>
-	      <setup>/usr/local/lib/ibus-bamboo/ibus-engine-bamboo -gui</setup>
+	      <setup>/usr/local/lib/ibus-vhtime/ibus-engine-vhtime -gui</setup>
           </engine>
     </engines>
 </component>

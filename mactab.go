@@ -1,5 +1,5 @@
 /*
- * Bamboo - A Vietnamese Input method editor
+ * vhtime - A Vietnamese Input method editor
  * Copyright (C) 2018 Luong Thanh Lam <ltlam93@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -21,7 +21,7 @@ package main
 
 import (
 	"bufio"
-	"ibus-bamboo/config"
+	"vhtime/config"
 	"os"
 	"strings"
 	"sync"

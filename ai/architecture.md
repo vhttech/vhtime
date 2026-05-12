@@ -36,7 +36,7 @@ main.go ──► GetIBusEngineCreator()
 - Thư viện xử lý âm vị học tiếng Việt
 - `bamboo.IEngine` interface: `ProcessKey()`, `RemoveLastChar()`, `GetProcessedString()`, `CanProcessKey()`
 - Hỗ trợ nhiều input method (Telex/VNI/VIQR/…) qua `InputMethodDefinition`
-- `ParseInputMethod()` nạp định nghĩa từ `bamboo.xml` / built-in
+- `ParseInputMethod()` nạp định nghĩa từ `vhtime.xml` / built-in
 
 ### 3. Input Mode Dispatcher
 Engine chọn processor dựa vào `config.DefaultInputMode`:
@@ -65,7 +65,7 @@ CGo bridge cho các thao tác cần X11 native:
 - **Key recording**: X11 Record extension — x11_record.c (detect keypress globally)
 
 ### 6. MacroTable (`mactab.go`)
-- Load file text `~/.config/ibus-bamboo/ibus-bamboo.macro.text`
+- Load file text `~/.config/ibus-vhtime/ibus-vhtime.macro.text`
 - Format: `keyword:replacement` mỗi dòng
 - Hỗ trợ auto-capitalize khi macro được nhận ra
 

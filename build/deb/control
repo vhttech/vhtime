@@ -15,15 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-Source: ibus-bamboo
+Source: ibus-vhtime
 Section: utils
 Priority: extra
 Maintainer: Luong Thanh Lam <ltlam93@gmail.com>
 Build-Depends: debhelper, golang, libibus-1.0-dev, libx11-dev, libxtst-dev, libgtk-3-dev
 Standards-Version: 0.8.4
-Homepage: https://github.com/BambooEngine/ibus-bamboo
+Homepage: https://github.com/BambooEngine/ibus-vhtime
 
-Package: ibus-bamboo
+Package: ibus-vhtime
 Architecture: any
 Depends: ibus, libgtk-3-0
 Description: A Vietnamese IME for IBus using Bamboo Engine.

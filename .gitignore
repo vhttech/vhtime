@@ -20,7 +20,7 @@ test-data/
 src/*/.git
 debian/files
 debian/debhelper-build-stamp
-debian/ibus-bamboo*
+debian/ibus-vhtime*
 debian/.debhelper
 *_linux
 *.tar.gz

@@ -1,17 +1,17 @@
-IBus Bamboo - An open source Vietnamese IME for IBus using Bamboo Engine
+vhtime - An open source Vietnamese IME for IBus using Bamboo Engine
 ===================================
-[![GitHub release](https://img.shields.io/github/release/BambooEngine/ibus-bamboo.svg)](https://github.com/BambooEngine/ibus-bamboo/releases/latest)
+[![GitHub release](https://img.shields.io/github/release/BambooEngine/ibus-vhtime.svg)](https://github.com/BambooEngine/ibus-vhtime/releases/latest)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://opensource.org/licenses/GPL-3.0)
-[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/BambooEngine/ibus-bamboo)
+[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/BambooEngine/ibus-vhtime)
 
-IBus Bamboo is a Vietnamese input method engine for IBus that translates key strokes into Vietnamese characters. For example, when you type `a`, an `a` will appear on the screen, but if one more `a` is typed, IBus Bamboo will replace the first `a` with the letter `â` according to [Telex](https://en.wikipedia.org/wiki/Telex_(input_method)) typing.
+vhtime is a Vietnamese input method engine for IBus that translates key strokes into Vietnamese characters. For example, when you type `a`, an `a` will appear on the screen, but if one more `a` is typed, vhtime will replace the first `a` with the letter `â` according to [Telex](https://en.wikipedia.org/wiki/Telex_(input_method)) typing.
 
-   ![ibus-bamboo](https://github.com/BambooEngine/ibus-bamboo/raw/gh-resources/demo.gif)
+   ![ibus-vhtime](https://github.com/BambooEngine/ibus-vhtime/raw/gh-resources/demo.gif)
 
 ## Note 🚧:
 The project has been stalled for quite a long time and may not be maintained in the future. You can use fcitx5-unikey as an alternative solution (almost all features are complete and it supports Wayland better).
 
-If you want to revive ibus-bamboo or discuss the project's future, please visit https://github.com/BambooEngine/ibus-bamboo/issues/590.
+If you want to revive ibus-vhtime or discuss the project's future, please visit https://github.com/BambooEngine/ibus-vhtime/issues/590.
 
 ## Getting Started
 
@@ -22,7 +22,7 @@ If you want to revive ibus-bamboo or discuss the project's future, please visit 
 	- [NixOS](#nixos)
 	- [Void Linux](#void-linux)
 	- [Install from OpenBuildService](#install-from-openbuildservice)
-	- [Install from source](https://github.com/BambooEngine/ibus-bamboo/wiki/H%C6%B0%E1%BB%9Bng-d%E1%BA%ABn-c%C3%A0i-%C4%91%E1%BA%B7t-t%E1%BB%AB-m%C3%A3-ngu%E1%BB%93n)
+	- [Install from source](https://github.com/BambooEngine/ibus-vhtime/wiki/H%C6%B0%E1%BB%9Bng-d%E1%BA%ABn-c%C3%A0i-%C4%91%E1%BA%B7t-t%E1%BB%AB-m%C3%A3-ngu%E1%BB%93n)
 - [Usage](#usage)
 - [Bug reports](#bug-reports)
 - [License](#license)
@@ -48,22 +48,22 @@ If you want to revive ibus-bamboo or discuss the project's future, please visit 
 ### Ubuntu and derivatives
 
 ```sh
-sudo add-apt-repository ppa:bamboo-engine/ibus-bamboo
+sudo add-apt-repository ppa:bamboo-engine/ibus-vhtime
 sudo apt-get update
-sudo apt-get install ibus-bamboo
+sudo apt-get install ibus-vhtime
 ibus restart
-# Make ibus-bamboo your default input method, this will remove other existing input layouts
+# Make ibus-vhtime your default input method, this will remove other existing input layouts
 env DCONF_PROFILE=ibus dconf write /desktop/ibus/general/preload-engines "['xkb:us::eng', 'Bamboo']" && gsettings set org.gnome.desktop.input-sources sources "[('xkb', 'us'), ('ibus', 'Bamboo')]"
 ```
 
 ### Arch Linux and derivatives
-`ibus-bamboo` is now available on the [AUR](https://aur.archlinux.org/packages/ibus-bamboo). Don't forget to leave a vote for the maintainers so that one day it can be included in the official Arch repository!
+`ibus-vhtime` is now available on the [AUR](https://aur.archlinux.org/packages/ibus-vhtime). Don't forget to leave a vote for the maintainers so that one day it can be included in the official Arch repository!
 
 ### NixOS
 
 #### Nixpkgs
 
-`ibus-bamboo` is available on the main Nixpkgs repo. Make sure your NixOS configuration must contain this code to install it.
+`ibus-vhtime` is available on the main Nixpkgs repo. Make sure your NixOS configuration must contain this code to install it.
 
 ```nix
 {
@@ -90,15 +90,15 @@ Example code at `flake.nix`
       url = "github:nixos/nixpkgs/nixos-24.05";
     };
 
-    ibus-bamboo = {
-      url = "github:BambooEngine/ibus-bamboo";
+    ibus-vhtime = {
+      url = "github:BambooEngine/ibus-vhtime";
     };
   };
 
   outputs = {
     self,
     nixpkgs,
-    ibus-bamboo
+    ibus-vhtime
   }@inputs:
   let
     inherit (self) outputs;
@@ -125,7 +125,7 @@ Example code at `input-method.nix`
 { inputs, system, ... }:
 
 let
-  bamboo = inputs.ibus-bamboo.packages."${system}".default;
+  bamboo = inputs.ibus-vhtime.packages."${system}".default;
 in
 {
   i18n.inputMethod = {
@@ -140,17 +140,17 @@ in
 Final step is update flake and switch your system to new config.
 
 ### Void Linux
-`ibus-bamboo` is available on the main Void Linux repo. You can install it directly.
+`ibus-vhtime` is available on the main Void Linux repo. You can install it directly.
 
 ```sh
-sudo xbps-install -S ibus-bamboo
+sudo xbps-install -S ibus-vhtime
 ```
 
 ### Install from OpenBuildService
-[![OpenBuildService](https://github.com/BambooEngine/ibus-bamboo/raw/gh-resources/obs.png)](https://software.opensuse.org//download.html?project=home%3Alamlng&package=ibus-bamboo)
+[![OpenBuildService](https://github.com/BambooEngine/ibus-vhtime/raw/gh-resources/obs.png)](https://software.opensuse.org//download.html?project=home%3Alamlng&package=ibus-vhtime)
 
 ## Usage
-The difference between `ibus-bamboo` and other input methods is that `ibus-bamboo` provides different typing modes (1 underlined and 5 non-underlined typing modes - don't confuse **typing mode** with **typing method**, typing methods are `telex`, `vni`, ...).
+The difference between `ibus-vhtime` and other input methods is that `ibus-vhtime` provides different typing modes (1 underlined and 5 non-underlined typing modes - don't confuse **typing mode** with **typing method**, typing methods are `telex`, `vni`, ...).
 
 To switch between typing modes, simply click on an input box (a box to enter text), then press the combination <kbd>Shift</kbd>+<kbd>~</kbd>, a table with the available typing modes will appear, you just need to press the corresponding number key to select.
 
@@ -162,7 +162,7 @@ To switch between typing modes, simply click on an input box (a box to enter tex
  - Support for Wayland in IBus is not yet ideal. For a better typing experience, please use Xorg.
 
 ## Bug reports
-Before submitting a question or bug report, please ensure you have read through [these common issues](https://github.com/BambooEngine/ibus-bamboo/wiki/C%C3%A1c-v%E1%BA%A5n-%C4%91%E1%BB%81-th%C6%B0%E1%BB%9Dng-g%E1%BA%B7p) and see if you can resolve the problem on your own. If you still encounter issues after trying these steps, or you don't see something similar to your issue listed, please submit a bug report in the [Bamboo issue tracker](https://github.com/BambooEngine/ibus-bamboo/issues)
+Before submitting a question or bug report, please ensure you have read through [these common issues](https://github.com/BambooEngine/ibus-vhtime/wiki/C%C3%A1c-v%E1%BA%A5n-%C4%91%E1%BB%81-th%C6%B0%E1%BB%9Dng-g%E1%BA%B7p) and see if you can resolve the problem on your own. If you still encounter issues after trying these steps, or you don't see something similar to your issue listed, please submit a bug report in the [Bamboo issue tracker](https://github.com/BambooEngine/ibus-vhtime/issues)
 
 ## License
-IBus Bamboo is released under the GNU General Public License v3.0
+vhtime is released under the GNU General Public License v3.0

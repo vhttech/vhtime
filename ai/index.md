@@ -1,4 +1,4 @@
-# ibus-bamboo — AI Knowledge Index
+# ibus-vhtime — AI Knowledge Index
 
 > Tài liệu này là điểm khởi đầu để AI nắm bắt toàn bộ codebase mà không cần quét lại dự án.
 > **Quy tắc bắt buộc**: Bất cứ khi nào có thay đổi ảnh hưởng đến kiến trúc, module, config,
@@ -6,7 +6,7 @@
 
 ## Dự án là gì?
 
-**ibus-bamboo** là một bộ gõ tiếng Việt (Vietnamese Input Method Editor) chạy trên IBus framework,
+**ibus-vhtime** là một bộ gõ tiếng Việt (Vietnamese Input Method Editor) chạy trên IBus framework,
 viết bằng Go + CGo. Phiên bản hiện tại: **0.8.4**.
 
 - Hỗ trợ Linux (X11 + Wayland) và FreeBSD
@@ -17,7 +17,7 @@ viết bằng Go + CGo. Phiên bản hiện tại: **0.8.4**.
 ## Cây thư mục chính
 
 ```
-ibus-bamboo/
+ibus-vhtime/
 ├── main.go                 # Entry point, khởi tạo IBus bus + engine factory
 ├── engine.go               # IBusBambooEngine struct + ProcessKeyEvent dispatcher
 ├── engine_preedit.go       # Mode: Preedit (gạch chân trong ô nhập)
@@ -48,7 +48,7 @@ ibus-bamboo/
 ├── ui/
 │   ├── ui.go               # CGo bridge → GTK3 GUI (openGUI)
 │   └── keyboard-shortcut-editor.c  # Widget C cho cài phím tắt
-├── data/                   # bamboo.xml, từ điển, emoji JSON, desktop file
+├── data/                   # vhtime.xml, từ điển, emoji JSON, desktop file
 ├── scripts/
 │   ├── build               # Shell script build Go binary
 │   ├── install             # Shell script cài vào PREFIX

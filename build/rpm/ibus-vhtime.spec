@@ -1,25 +1,25 @@
-%define engine_name bamboo
+%define engine_name vhtime
 %define ibus_dir     /usr/share/ibus
 %define engine_share_dir   /usr/share/ibus-%{engine_name}
 %define engine_lib_dir   /usr/lib/ibus-%{engine_name}
 %define ibus_comp_dir /usr/share/ibus/component
 %define _unpackaged_files_terminate_build 0
 
-Name: ibus-bamboo
+Name: ibus-vhtime
 Version: 0.8.4
 Release: 1%{?dist}
 Summary: A Vietnamese input method for IBus
 
 License: GPL-3.0+
-URL: https://github.com/BambooEngine/ibus-bamboo
+URL: https://github.com/vhtech/ibus-vhtime
 Source0: %{name}-%{version}.tar.gz
 
 BuildRequires: go, ibus-devel, libX11-devel, libXtst-devel, gtk3-devel
 Requires: ibus, gtk3
 
 %description
-A Vietnamese IME for IBus using Bamboo Engine.
-Bộ gõ tiếng Việt mã nguồn mở hỗ trợ hầu hết các bảng mã thông dụng, các kiểu gõ tiếng Việt phổ biến, bỏ dấu thông minh, kiểm tra chính tả, gõ tắt,...
+A Vietnamese IME for IBus using Vhtime Engine.
+Bộ gõ tiếng Việt mã nguồn mở vhtime hỗ trợ hầu hết các bảng mã thông dụng, các kiểu gõ tiếng Việt phổ biến, bỏ dấu thông minh, kiểm tra chính tả, gõ tắt,...
 
 %global debug_package %{nil}
 %prep

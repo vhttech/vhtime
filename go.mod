@@ -1,4 +1,4 @@
-module ibus-bamboo
+module vhtime
 
 go 1.13
 

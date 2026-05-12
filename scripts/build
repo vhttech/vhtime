@@ -1,5 +1,5 @@
-# Ibus bamboo
-ibus_e_name="ibus-engine-bamboo"
+# vhtime
+ibus_e_name="ibus-engine-vhtime"
 version="0.8.4"
 
 # Go flags

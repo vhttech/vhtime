@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=IBus-Vhtime Setup
+Type=Application
+Exec=/usr/lib/ibus-vhtime/ibus-engine-vhtime -gui
+Icon=/usr/share/ibus-vhtime/icons/vi.svg
+NoDisplay=true
+StartupNotify=true

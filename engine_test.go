@@ -1,7 +1,7 @@
 package main
 
 import (
-	"ibus-bamboo/config"
+	"vhtime/config"
 	"testing"
 
 	"github.com/BambooEngine/bamboo-core"

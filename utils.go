@@ -1,5 +1,5 @@
 /*
- * Bamboo - A Vietnamese Input method editor
+ * vhtime - A Vietnamese Input method editor
  * Copyright (C) 2018 Luong Thanh Lam <ltlam93@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -36,10 +36,10 @@ const (
 	VnCaseNoChange
 )
 const (
-	HomePage           = "https://github.com/BambooEngine/ibus-bamboo"
+	HomePage           = "https://github.com/vhtech/ibus-vhtime"
 	CharsetConvertPage = "https://tools.jcisio.com/vietuni/"
 
-	DataDir          = "/usr/share/ibus-bamboo"
+	DataDir          = "/usr/share/ibus-vhtime"
 	DictVietnameseCm = "data/vietnamese.cm.dict"
 	DictEmojiOne     = "data/emojione.json"
 )
@@ -85,7 +85,7 @@ func getEngineSubFile(fileName string) string {
 	}
 
 	// return installation data/macro.tpl.txt path
-	fileName = "../../share/ibus-bamboo/" + fileName
+	fileName = "../../share/ibus-vhtime/" + fileName
 	return filepath.Join(filepath.Dir(os.Args[0]), fileName)
 }
 

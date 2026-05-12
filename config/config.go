@@ -31,9 +31,9 @@ type Config struct {
 func GetConfigDir(ngName string) string {
 	u, err := user.Current()
 	if err == nil {
-		return fmt.Sprintf(configDir, u.HomeDir, "bamboo")
+		return fmt.Sprintf(configDir, u.HomeDir, "vhtime")
 	}
-	return fmt.Sprintf(configDir, "~", "bamboo")
+	return fmt.Sprintf(configDir, "~", "vhtime")
 }
 
 func GetMacroPath(engineName string) string {
@@ -59,7 +59,7 @@ func DefaultCfg() Config {
 
 func LoadConfig(engineName string) *Config {
 	var c = DefaultCfg()
-	if engineName == "bamboous" {
+	if engineName == "vhtimeus" {
 		c.DefaultInputMode = UsIM
 		c.IBflags = IBUsStdFlags
 		return &c
