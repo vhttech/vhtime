@@ -15,9 +15,11 @@ func (e *Engine) getInputMode() int {
 		if im, ok := e.config.InputModeMapping[wmClass]; ok && config.ImLookupTable[im] != "" {
 			return im
 		}
-		// GPU terminals on X11 don't support XIM/IBus preedit; fall back to XTest.
+		// GPU terminals on X11 don't support XIM preedit or IBus CommitText;
+		// ForwardAsCommitIM delivers each character as an XIM key event which Kitty
+		// and similar terminals do handle correctly.
 		if !isWayland && inStringList(x11NonXimTerminals, wmClass) {
-			return config.XTestFakeKeyEventIM
+			return config.ForwardAsCommitIM
 		}
 	}
 	if _, ok := config.ImLookupTable[e.config.DefaultInputMode]; ok {

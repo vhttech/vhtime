@@ -327,13 +327,12 @@ func (e *Engine) bsCommitText(rs []rune) {
 	if len(rs) == 0 {
 		return
 	}
-	if e.checkInputMode(config.ForwardAsCommitIM) {
-		// ForwardAsCommitIM is needed for apps that cannot handle IBus CommitText
-		// (some legacy Qt apps). We forward individual key events per rune.
-		// keyCode (hardware scancode) is 0 because Vietnamese accented characters
-		// (ổ, đ, …) have no physical key — this is acceptable per Wayland spec
-		// (wl_keyboard.key allows keyCode=0 for synthetic events). Some KDE Plasma
-		// versions may mishandle this; prefer SurroundingTextIM on KDE Wayland.
+	// ForwardAsCommitIM and XTestFakeKeyEventIM-on-X11 both need per-rune key
+	// events instead of IBus CommitText. Kitty and similar GPU terminals handle
+	// XIM key events correctly but ignore XIM commit strings.
+	useForwardKey := e.checkInputMode(config.ForwardAsCommitIM) ||
+		(e.checkInputMode(config.XTestFakeKeyEventIM) && !isWayland)
+	if useForwardKey {
 		for _, chr := range rs {
 			keyVal := vnSymMapping[chr]
 			if keyVal == 0 {
