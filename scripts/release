@@ -22,17 +22,25 @@ echo "==> ibus-vhtime ${VERSION} (${DEB_ARCH})"
 echo "==> Building binary"
 sh scripts/build
 
-# Prepare staging
-rm -rf "$STAGING"
+# Prepare dist (clean slate each release)
+rm -rf "$DIST_DIR"
 mkdir -p "$DIST_DIR"
 sh scripts/install /usr "$STAGING"
 
-# Binary tarball
-TAR_OUT="${PKG_NAME}-${VERSION}-linux-${DEB_ARCH}.tar.gz"
-echo "==> ${TAR_OUT}"
-tar -czf "$DIST_DIR/$TAR_OUT" -C "$STAGING" usr
+# ── Binary tarball (with GUI installer) ──────────────────────────────────
+TAR_NAME="${PKG_NAME}-${VERSION}-linux-${DEB_ARCH}"
+TAR_OUT="${TAR_NAME}.tar.gz"
+TAR_STAGING="$DIST_DIR/.tar-staging/$TAR_NAME"
 
-# DEB
+echo "==> ${TAR_OUT}"
+mkdir -p "$TAR_STAGING"
+cp -r "$STAGING/usr" "$TAR_STAGING/"
+cp scripts/installer.sh "$TAR_STAGING/install.sh"
+chmod +x "$TAR_STAGING/install.sh"
+tar -czf "$DIST_DIR/$TAR_OUT" -C "$DIST_DIR/.tar-staging" "$TAR_NAME"
+rm -rf "$DIST_DIR/.tar-staging"
+
+# ── DEB ──────────────────────────────────────────────────────────────────
 if command -v dpkg-deb >/dev/null 2>&1; then
     DEB_OUT="${PKG_NAME}_${VERSION}_${DEB_ARCH}.deb"
     echo "==> ${DEB_OUT}"
@@ -57,7 +65,7 @@ else
     echo "    [skip .deb] dpkg-deb not found"
 fi
 
-# RPM
+# ── RPM ──────────────────────────────────────────────────────────────────
 if command -v rpmbuild >/dev/null 2>&1; then
     RPM_OUT="${PKG_NAME}-${VERSION}-1.${RPM_ARCH}.rpm"
     echo "==> ${RPM_OUT}"
