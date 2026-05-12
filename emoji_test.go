@@ -23,35 +23,35 @@ import (
 )
 
 func TestEmojiFindResult(t *testing.T) {
-	emojiTrie, _ = loadEmojiOne(DictEmojiOne)
+	trie, _ := loadEmojiOne(DictEmojiOne)
 	var be = NewEmojiEngine()
-	if be.MatchString(":'") != true {
-		t.Errorf("Finding result for emoji :', expected true, got %v", be.MatchString(":'"))
+	if !be.MatchString(trie, ":'") {
+		t.Errorf("Finding result for emoji :', expected true, got false")
 	}
-	if be.MatchString(":')") != true {
-		t.Errorf("Finding result for emoji :'), expected true, got %v", be.MatchString(":')"))
+	if !be.MatchString(trie, ":')") {
+		t.Errorf("Finding result for emoji :'), expected true, got false")
 	}
-	if be.MatchString("gri") != true {
-		t.Errorf("Finding result for emoji gri, expected true, got %v", be.MatchString("gri"))
+	if !be.MatchString(trie, "gri") {
+		t.Errorf("Finding result for emoji gri, expected true, got false")
 	}
-	if be.MatchString("grin") != true {
-		t.Errorf("Finding result for emoji grin, expected true, got %v", be.MatchString("grinning"))
+	if !be.MatchString(trie, "grin") {
+		t.Errorf("Finding result for emoji grin, expected true, got false")
 	}
 }
 
 func TestFilterEmoji(t *testing.T) {
-	emojiTrie, _ = loadEmojiOne(DictEmojiOne)
+	trie, _ := loadEmojiOne(DictEmojiOne)
 	var be = NewEmojiEngine()
-	var grinnings = be.Filter(":')")
+	var grinnings = be.Filter(trie, ":')")
 	if !inStringList(grinnings, "😂") {
-		t.Errorf("Filtering emojo :'), expected %v, got %v", true, inStringList(grinnings, "😂"))
+		t.Errorf("Filtering emoji :'), expected to contain 😂, got %v", grinnings)
 	}
-	var grinnings2 = be.Filter(":")
+	var grinnings2 = be.Filter(trie, ":")
 	if !inStringList(grinnings2, "😂") {
-		t.Errorf("Filtering emojo :, expected %v, got %v", true, inStringList(grinnings2, "😂"))
+		t.Errorf("Filtering emoji :, expected to contain 😂, got %v", grinnings2)
 	}
-	var grinnings3 = be.Filter("grin")
+	var grinnings3 = be.Filter(trie, "grin")
 	if !inStringList(grinnings3, "😀") {
-		t.Errorf("Filtering emojo `grin`, expected %v got %v", true, inStringList(grinnings3, "😀"))
+		t.Errorf("Filtering emoji `grin`, expected to contain 😀, got %v", grinnings3)
 	}
 }

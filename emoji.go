@@ -21,7 +21,7 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -37,7 +37,7 @@ type EmojiOne struct {
 func loadEmojiOne(dataFile string) (*TrieNode, error) {
 	var trie = NewTrie()
 	var c = map[string]EmojiOne{}
-	var data, err = ioutil.ReadFile(dataFile)
+	var data, err = os.ReadFile(dataFile)
 	if err != nil {
 		return nil, err
 	}
@@ -68,15 +68,14 @@ func NewEmojiEngine() *EmojiEngine {
 	return be
 }
 
-func (be *EmojiEngine) MatchString(s string) bool {
-	var lookup = FindPrefix(emojiTrie, s)
-	return lookup != nil
+func (be *EmojiEngine) MatchString(trie *TrieNode, s string) bool {
+	return FindPrefix(trie, s) != nil
 }
 
-func (be *EmojiEngine) Filter(s string) []string {
+func (be *EmojiEngine) Filter(trie *TrieNode, s string) []string {
 	var codePoints []string
 	var keys []string
-	var lookup = FindPrefix(emojiTrie, s)
+	var lookup = FindPrefix(trie, s)
 	for key := range lookup {
 		keys = append(keys, key)
 	}
@@ -104,8 +103,8 @@ func (be *EmojiEngine) Reset() {
 	be.keys = nil
 }
 
-func (be *EmojiEngine) Query() []string {
-	return be.Filter(string(be.keys))
+func (be *EmojiEngine) Query(trie *TrieNode) []string {
+	return be.Filter(trie, string(be.keys))
 }
 
 func (be *EmojiEngine) RemoveLastKey() {

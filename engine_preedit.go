@@ -160,7 +160,7 @@ func (e *Engine) mustFallbackToEnglish() bool {
 		return false
 	}
 	if e.config.IBflags&config.IBspellCheckWithDicts != 0 {
-		return !dictionary[vnSeq]
+		return !e.dictionary[vnSeq]
 	}
 	return !e.preeditor.IsValid(true)
 }

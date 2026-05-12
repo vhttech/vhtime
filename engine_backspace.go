@@ -41,7 +41,7 @@ func (e *Engine) backspaceProcessKeyEvent(keyVal uint32, keyCode uint32, state u
 		return false, nil
 	}
 	var keyRune = rune(keyVal)
-	if e.config.IBflags&config.IBmacroEnabled == 0 && len(keyPressChan) == 0 && e.rawInputLen() == 0 && !inKeyList(e.preeditor.GetInputMethod().AppendingKeys, keyRune) {
+	if e.config.IBflags&config.IBmacroEnabled == 0 && len(e.keyPressChan) == 0 && e.rawInputLen() == 0 && !inKeyList(e.preeditor.GetInputMethod().AppendingKeys, keyRune) {
 		e.updateLastKeyWithShift(keyVal, state)
 		if e.preeditor.CanProcessKey(keyRune) && isValidState(state) {
 			e.isFirstTimeSendingBS = true
@@ -63,7 +63,7 @@ func (e *Engine) backspaceProcessKeyEvent(keyVal uint32, keyCode uint32, state u
 					e.addFakeBackspace(-1)
 					return false, nil
 				} else {
-					sleep()
+					e.waitForKeyPressQueue()
 					if e.rawInputLen() > 0 {
 						if e.shouldFallbackToEnglish(true) {
 							e.preeditor.RestoreLastWord(false)
@@ -74,7 +74,7 @@ func (e *Engine) backspaceProcessKeyEvent(keyVal uint32, keyCode uint32, state u
 				return false, nil
 			}
 			if keyVal == IBusTab {
-				sleep()
+				e.waitForKeyPressQueue()
 				if ok, _ := e.getMacroText(); !ok {
 					e.preeditor.Reset()
 					return false, nil
@@ -82,27 +82,27 @@ func (e *Engine) backspaceProcessKeyEvent(keyVal uint32, keyCode uint32, state u
 			}
 			isValidKey := isValidState(state) && e.isValidKeyVal(keyVal)
 			if !isValidKey {
-				sleep()
-				return e.keyPressHandler(keyVal, keyCode, state), nil
+				e.waitForKeyPressQueue()
+				return e.processKeyPress(keyVal, keyCode, state), nil
 			}
 		}
 		// if the main thread is busy processing, the keypress events come all mixed up
 		// so we enqueue these keypress events and process them sequentially on another thread
-		keyPressChan <- [3]uint32{keyVal, keyCode, state}
+		e.keyPressChan <- [3]uint32{keyVal, keyCode, state}
 		return true, nil
 	} else {
-		return e.keyPressHandler(keyVal, keyCode, state), nil
+		return e.processKeyPress(keyVal, keyCode, state), nil
 	}
 }
 
-func (e *Engine) keyPressForwardHandler(keyVal, keyCode, state uint32) {
-	ret := e.keyPressHandler(keyVal, keyCode, state)
+func (e *Engine) forwardOrDropKeyPress(keyVal, keyCode, state uint32) {
+	ret := e.processKeyPress(keyVal, keyCode, state)
 	if !ret {
 		e.ForwardKeyEvent(keyVal, keyCode, state)
 	}
 }
 
-func (e *Engine) keyPressHandler(keyVal, keyCode, state uint32) bool {
+func (e *Engine) processKeyPress(keyVal, keyCode, state uint32) bool {
 	defer e.updateLastKeyWithShift(keyVal, state)
 	if e.keyPressDelay > 0 {
 		time.Sleep(time.Duration(e.keyPressDelay) * time.Millisecond)
@@ -198,8 +198,8 @@ func (e *Engine) updatePreviousTextInBatch(oldText, newText string, isWordBreakR
 	}
 	// isDirty means containing runes that are not committed
 	var isDirty = false
-	for i := 0; i < len(keyPressChan); i++ {
-		var keyEvents = <-keyPressChan
+	for i := 0; i < len(e.keyPressChan); i++ {
+		var keyEvents = <-e.keyPressChan
 		var keyVal, keyCode, state = keyEvents[0], keyEvents[1], keyEvents[2]
 		isValidKey := isValidState(state) && e.isValidKeyVal(keyVal)
 		if isValidKey {
@@ -271,17 +271,15 @@ func (e *Engine) SendBackSpace(n int) {
 	}
 	if e.checkInputMode(config.XTestFakeKeyEventIM) {
 		e.setFakeBackspace(int32(n))
-		var sleep = func() {
-			var count = 0
-			for e.getFakeBackspace() > 0 && count < 10 {
+		waitFakeBS := func() {
+			for count := 0; e.getFakeBackspace() > 0 && count < 10; count++ {
 				time.Sleep(5 * time.Millisecond)
-				count++
 			}
 		}
 		log.Printf("Sendding %d backspace via XTestFakeKeyEvent\n", n)
 		time.Sleep(10 * time.Millisecond)
 		x11SendBackspace(n, 0)
-		sleep()
+		waitFakeBS()
 		time.Sleep(time.Duration(n) * (10 + BACKSPACE_INTERVAL) * time.Millisecond)
 	} else if e.checkInputMode(config.SurroundingTextIM) {
 		time.Sleep(20 * time.Millisecond)

@@ -34,7 +34,7 @@ func (e *Engine) openEmojiList() {
 	e.UpdateAuxiliaryText(ibus.NewText(":"), true)
 	lt := ibus.NewLookupTable()
 	lt.Orientation = IBusOrientationHorizontal
-	for _, codePoint := range e.emoji.Query() {
+	for _, codePoint := range e.emoji.Query(e.spellEmojiTrie) {
 		lt.AppendCandidate(codePoint)
 	}
 	lt.PageSize = uint32(EmojiMaxPageSize)
@@ -93,7 +93,7 @@ func (e *Engine) emojiProcessKeyEvent(keyVal uint32, keyCode uint32, state uint3
 		}
 	} else if (keyRune >= 'a' && keyRune <= 'z') || (keyRune >= 'A' && keyRune <= 'Z') {
 		var testStr = string(append(e.emoji.keys, keyRune))
-		if raw == ":" && !e.emoji.MatchString(testStr) {
+		if raw == ":" && !e.emoji.MatchString(e.spellEmojiTrie, testStr) {
 			e.emoji.Reset()
 		}
 		e.emoji.ProcessKey(keyRune)
@@ -110,11 +110,11 @@ func (e *Engine) emojiProcessKeyEvent(keyVal uint32, keyCode uint32, state uint3
 		return false
 	} else if (keyRune >= ' ' && keyRune <= '~') || bamboo.IsWordBreakSymbol(keyRune) {
 		var testStr = string(append(e.emoji.keys, keyRune))
-		if raw == ":" && !e.emoji.MatchString(testStr) {
+		if raw == ":" && !e.emoji.MatchString(e.spellEmojiTrie, testStr) {
 			e.emoji.Reset()
 		}
 		e.emoji.ProcessKey(keyRune)
-		if !e.emoji.MatchString(string(e.emoji.keys)) {
+		if !e.emoji.MatchString(e.spellEmojiTrie, string(e.emoji.keys)) {
 			e.CommitText(ibus.NewText(e.emoji.GetRawString()))
 			reset()
 			return true
@@ -126,7 +126,7 @@ func (e *Engine) emojiProcessKeyEvent(keyVal uint32, keyCode uint32, state uint3
 	}
 	raw = e.emoji.GetRawString()
 	rawTextLen = len([]rune(raw))
-	cps := e.emoji.Query()
+	cps := e.emoji.Query(e.spellEmojiTrie)
 	if cps != nil {
 		codePoint0 := cps[0]
 		e.UpdatePreeditTextWithMode(ibus.NewText(codePoint0), uint32(len(codePoint0)), true, ibus.IBUS_ENGINE_PREEDIT_COMMIT)
@@ -165,7 +165,7 @@ func (e *Engine) updateEmojiLookupTable() {
 	}
 	var visible = len(e.emojiLookupTable.Candidates) > 0
 	e.UpdateLookupTable(e.emojiLookupTable, visible)
-	var cps = e.emoji.Query()
+	var cps = e.emoji.Query(e.spellEmojiTrie)
 	if pos := e.emojiLookupTable.CursorPos; pos < uint32(len(cps)) {
 		var codePoint0 = cps[pos]
 		e.UpdatePreeditTextWithMode(ibus.NewText(codePoint0), uint32(len(codePoint0)), true, ibus.IBUS_ENGINE_PREEDIT_COMMIT)
@@ -173,7 +173,7 @@ func (e *Engine) updateEmojiLookupTable() {
 }
 
 func (e *Engine) commitEmojiCandidate() {
-	var cps = e.emoji.Query()
+	var cps = e.emoji.Query(e.spellEmojiTrie)
 	if pos := e.emojiLookupTable.CursorPos; pos < uint32(len(cps)) {
 		e.CommitText(ibus.NewText(cps[pos]))
 	}

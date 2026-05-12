@@ -38,12 +38,7 @@ import (
 	"github.com/godbus/dbus/v5"
 )
 
-var dictionary = map[string]bool{}
-var emojiTrie = NewTrie()
-
 func GetIBusEngineCreator() func(*dbus.Conn, string) dbus.ObjectPath {
-	go keyPressCapturing()
-
 	return func(conn *dbus.Conn, ngName string) dbus.ObjectPath {
 		var ngGroupName = strings.Split(ngName, "::")[0]
 		var engineName = strings.ToLower(ngGroupName)
@@ -84,7 +79,8 @@ func (e *Engine) init() {
 			e.macroTable.Enable(e.engineName)
 		}
 	}
-	keyPressHandler = e.keyPressForwardHandler
+	e.keyPressHandler = e.forwardOrDropKeyPress
+	e.startKeyPressCapturing()
 
 	if e.config.IBflags&config.IBmouseCapturing != 0 {
 		startMouseCapturing()
@@ -140,24 +136,20 @@ func initConfigFiles(engineName string) {
 	}
 }
 
-var keyPressHandler = func(keyVal, keyCode, state uint32) {}
-var keyPressChan = make(chan [3]uint32, 100)
-var lenKeyChan int32
-
-func keyPressCapturing() {
-	for keyEvents := range keyPressChan {
-		atomic.StoreInt32(&lenKeyChan, int32(len(keyPressChan)))
-
-		var keyVal, keyCode, state = keyEvents[0], keyEvents[1], keyEvents[2]
-		keyPressHandler(keyVal, keyCode, state)
-
-		atomic.AddInt32(&lenKeyChan, -1)
-	}
+func (e *Engine) startKeyPressCapturing() {
+	go func() {
+		for keyEvents := range e.keyPressChan {
+			atomic.StoreInt32(&e.lenKeyChan, int32(len(e.keyPressChan)))
+			keyEvents[0], keyEvents[1], keyEvents[2] = keyEvents[0], keyEvents[1], keyEvents[2]
+			e.keyPressHandler(keyEvents[0], keyEvents[1], keyEvents[2])
+			atomic.AddInt32(&e.lenKeyChan, -1)
+		}
+	}()
 }
 
-var sleep = func() {
+func (e *Engine) waitForKeyPressQueue() {
 	var i = 0
-	for i < 10 && atomic.LoadInt32(&lenKeyChan) > 0 {
+	for i < 10 && atomic.LoadInt32(&e.lenKeyChan) > 0 {
 		i++
 		time.Sleep(5 * time.Millisecond)
 	}

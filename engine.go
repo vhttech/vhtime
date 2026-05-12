@@ -21,18 +21,17 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os/exec"
 	"reflect"
 	"strconv"
 	"sync"
 
+	"vhtime/config"
+	"vhtime/ui"
+
 	"github.com/BambooEngine/bamboo-core"
 	ibus "github.com/BambooEngine/goibus"
 	"github.com/godbus/dbus/v5"
-
-	"vhtime/config"
-	"vhtime/ui"
 )
 
 type Engine struct {
@@ -58,19 +57,28 @@ type Engine struct {
 	isSurroundingTextReady bool
 	lastKeyWithShift       bool
 	lastCommitText         int64
-	// restore key strokes by pressing Shift + Space
 	shouldRestoreKeyStrokes bool
-	// enqueue key strokes to process later
 	shouldEnqueueKeyStrokes bool
+	// per-engine lazy-loaded resources (replacing package-level globals)
+	dictionary     map[string]bool
+	dictOnce       sync.Once
+	spellEmojiTrie *TrieNode
+	emojiOnce      sync.Once
+	// key-press queue for backspace-forwarding modes (replacing package-level globals)
+	keyPressChan    chan [3]uint32
+	keyPressHandler func(keyVal, keyCode, state uint32)
+	lenKeyChan      int32
 }
 
 func NewIbusBambooEngine(name string, cfg *config.Config, base IEngine, preeditor bamboo.IEngine) *Engine {
-	return &Engine{
-		engineName: name,
-		IEngine:    base,
-		preeditor:  preeditor,
-		config:     cfg,
+	e := &Engine{
+		engineName:   name,
+		IEngine:      base,
+		preeditor:    preeditor,
+		config:       cfg,
+		keyPressChan: make(chan [3]uint32, 100),
 	}
+	return e
 }
 
 /*
@@ -110,15 +118,19 @@ func (e *Engine) FocusIn() *dbus.Error {
 	e.checkWmClass(latestWm)
 	e.RegisterProperties(e.propList)
 	e.RequireSurroundingText()
-	if e.isShortcutKeyEnable(KSEmojiDialog) && emojiTrie != nil && len(emojiTrie.Children) == 0 {
-		var err error
-		emojiTrie, err = loadEmojiOne(DictEmojiOne)
-		if err != nil {
-			panic(fmt.Sprintf("failed to load emojiTrie from %s: %s", DictEmojiOne, err))
-		}
+	if e.isShortcutKeyEnable(KSEmojiDialog) {
+		e.emojiOnce.Do(func() {
+			var err error
+			e.spellEmojiTrie, err = loadEmojiOne(DictEmojiOne)
+			if err != nil {
+				panic(fmt.Sprintf("failed to load emoji trie from %s: %s", DictEmojiOne, err))
+			}
+		})
 	}
-	if e.config.IBflags&config.IBspellCheckWithDicts != 0 && len(dictionary) == 0 {
-		dictionary, _ = loadDictionary(DictVietnameseCm)
+	if e.config.IBflags&config.IBspellCheckWithDicts != 0 {
+		e.dictOnce.Do(func() {
+			e.dictionary, _ = loadDictionary(DictVietnameseCm)
+		})
 	}
 	if inStringList(disabledMouseCapturingList, e.getWmClass()) {
 		stopMouseCapturing()
@@ -129,7 +141,6 @@ func (e *Engine) FocusIn() *dbus.Error {
 }
 
 func (e *Engine) FocusOut() *dbus.Error {
-	log.Print("FocusOut.")
 	return nil
 }
 
@@ -318,7 +329,7 @@ func (e *Engine) PropertyActivate(propName string, propState uint32) *dbus.Error
 		if propState == ibus.PROP_STATE_CHECKED {
 			e.config.IBflags |= config.IBspellCheckWithDicts
 			turnSpellChecking(true)
-			dictionary, _ = loadDictionary(DictVietnameseCm)
+			e.dictionary, _ = loadDictionary(DictVietnameseCm)
 		} else {
 			e.config.IBflags &= ^config.IBspellCheckWithDicts
 		}
