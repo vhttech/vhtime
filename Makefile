@@ -52,7 +52,7 @@ clean:
 	rm -rf debian/ibus-vhtime*
 
 
-install: build
+install:
 	$(SHELL) scripts/install ${PREFIX} ${DESTDIR}
 
 uninstall:
