@@ -259,144 +259,116 @@ func (e *Engine) SetContentType(purpose uint32, hints uint32) *dbus.Error {
 
 // @method(in_signature="su")
 func (e *Engine) PropertyActivate(propName string, propState uint32) *dbus.Error {
-	if propName == PropKeyAbout {
+	// URL-opening actions — return immediately, no config save needed.
+	switch propName {
+	case PropKeyAbout:
 		exec.Command("xdg-open", HomePage).Start()
 		return nil
-	}
-	if propName == PropKeyVnCharsetConvert {
+	case PropKeyVnCharsetConvert:
 		exec.Command("xdg-open", CharsetConvertPage).Start()
 		return nil
 	}
-	if propName == PropKeyConfiguration {
-		ui.OpenGUI(e.engineName)
-		e.config = config.LoadConfig(e.engineName)
-		return nil
-	}
-	if propName == PropKeyInputModeLookupTableShortcut {
-		ui.OpenGUI(e.engineName)
-		e.config = config.LoadConfig(e.engineName)
-		return nil
-	}
-	if propName == PropKeyMacroTable {
+
+	// GUI-opening actions — reload config after the dialog closes.
+	switch propName {
+	case PropKeyConfiguration, PropKeyInputModeLookupTableShortcut, PropKeyMacroTable:
 		ui.OpenGUI(e.engineName)
 		e.config = config.LoadConfig(e.engineName)
 		return nil
 	}
 
-	turnSpellChecking := func(on bool) {
-		if on {
-			e.config.IBflags |= config.IBspellCheckEnabled
-			e.config.IBflags |= config.IBautoNonVnRestore
-			if e.config.IBflags&config.IBspellCheckWithDicts == 0 {
-				e.config.IBflags |= config.IBspellCheckWithRules
-			}
-		} else {
-			e.config.IBflags &= ^config.IBspellCheckEnabled
-			e.config.IBflags &= ^config.IBautoNonVnRestore
-		}
-	}
+	checked := propState == ibus.PROP_STATE_CHECKED
+	e.applyPropChange(propName, checked)
 
-	if propName == PropKeyStdToneStyle {
-		if propState == ibus.PROP_STATE_CHECKED {
-			e.config.Flags |= bamboo.EstdToneStyle
-		} else {
-			e.config.Flags &= ^bamboo.EstdToneStyle
-		}
-	}
-	if propName == PropKeyFreeToneMarking {
-		if propState == ibus.PROP_STATE_CHECKED {
-			e.config.Flags |= bamboo.EfreeToneMarking
-		} else {
-			e.config.Flags &= ^bamboo.EfreeToneMarking
-		}
-	}
-	if propName == PropKeyEnableSpellCheck {
-		if propState == ibus.PROP_STATE_CHECKED {
-			turnSpellChecking(true)
-		} else {
-			turnSpellChecking(false)
-		}
-	}
-	if propName == PropKeySpellCheckByRules {
-		if propState == ibus.PROP_STATE_CHECKED {
-			e.config.IBflags |= config.IBspellCheckWithRules
-			turnSpellChecking(true)
-		} else {
-			e.config.IBflags &= ^config.IBspellCheckWithRules
-		}
-	}
-	if propName == PropKeySpellCheckByDicts {
-		if propState == ibus.PROP_STATE_CHECKED {
-			e.config.IBflags |= config.IBspellCheckWithDicts
-			turnSpellChecking(true)
-			e.dictionary, _ = loadDictionary(DictVietnameseCm)
-		} else {
-			e.config.IBflags &= ^config.IBspellCheckWithDicts
-		}
-	}
-	if propName == PropKeyMouseCapturing {
-		if propState == ibus.PROP_STATE_CHECKED {
-			e.config.IBflags |= config.IBmouseCapturing
-			startMouseCapturing()
-			startMouseRecording()
-		} else {
-			e.config.IBflags &= ^config.IBmouseCapturing
-			stopMouseCapturing()
-			stopMouseRecording()
-		}
-	}
-	if propName == PropKeyMacroEnabled {
-		if propState == ibus.PROP_STATE_CHECKED {
-			e.config.IBflags |= config.IBmacroEnabled
-			e.macroTable.Enable(e.engineName)
-		} else {
-			e.config.IBflags &= ^config.IBmacroEnabled
-			e.macroTable.Disable()
-		}
-	}
-	if propName == PropKeyPreeditInvisibility {
-		if propState == ibus.PROP_STATE_CHECKED {
-			e.config.IBflags |= config.IBnoUnderline
-		} else {
-			e.config.IBflags &= ^config.IBnoUnderline
-		}
-	}
-	if propName == PropKeyPreeditElimination {
-		if propState == ibus.PROP_STATE_CHECKED {
-			e.config.IBflags |= config.IBpreeditElimination
-		} else {
-			e.config.IBflags &= ^config.IBpreeditElimination
-		}
-	}
-	if propName == PropKeyAutoCapitalizeMacro {
-		if propState == ibus.PROP_STATE_CHECKED {
-			e.config.IBflags |= config.IBautoCapitalizeMacro
-		} else {
-			e.config.IBflags &= ^config.IBautoCapitalizeMacro
-		}
-		if e.config.IBflags&config.IBmacroEnabled != 0 {
-			e.macroTable.Reload(e.engineName, e.config.IBflags&config.IBautoCapitalizeMacro != 0)
-		}
-	}
-
-	var im, foundIm = getValueFromPropKey(propName, "InputMode")
-	if foundIm && propState == ibus.PROP_STATE_CHECKED {
+	// Dynamic prop keys: input mode, output charset, input method selection.
+	if im, ok := getValueFromPropKey(propName, "InputMode"); ok && checked {
 		e.config.DefaultInputMode, _ = strconv.Atoi(im)
 	}
-	var charset, foundCs = getValueFromPropKey(propName, "OutputCharset")
-	if foundCs && isValidCharset(charset) && propState == ibus.PROP_STATE_CHECKED {
+	if charset, ok := getValueFromPropKey(propName, "OutputCharset"); ok && isValidCharset(charset) && checked {
 		e.config.OutputCharset = charset
 	}
-	if _, found := e.config.InputMethodDefinitions[propName]; found && propState == ibus.PROP_STATE_CHECKED {
+	if _, ok := e.config.InputMethodDefinitions[propName]; ok && checked {
 		e.config.InputMethod = propName
 	}
+
 	if propName != "-" {
 		config.SaveConfig(e.config, e.engineName)
 	}
 	e.propList = GetPropListByConfig(e.config)
-
-	var inputMethod = bamboo.ParseInputMethod(e.config.InputMethodDefinitions, e.config.InputMethod)
-	e.preeditor = bamboo.NewEngine(inputMethod, e.config.Flags)
+	e.preeditor = bamboo.NewEngine(bamboo.ParseInputMethod(e.config.InputMethodDefinitions, e.config.InputMethod), e.config.Flags)
 	e.RegisterProperties(e.propList)
 	return nil
+}
+
+// applyPropChange updates the in-memory config for a single boolean property toggle.
+func (e *Engine) applyPropChange(propName string, checked bool) {
+	setFlag := func(flag uint) {
+		if checked {
+			e.config.IBflags |= flag
+		} else {
+			e.config.IBflags &= ^flag
+		}
+	}
+	setBambooFlag := func(flag uint) {
+		if checked {
+			e.config.Flags |= flag
+		} else {
+			e.config.Flags &= ^flag
+		}
+	}
+	enableSpellCheck := func(on bool) {
+		if on {
+			e.config.IBflags |= config.IBspellCheckEnabled | config.IBautoNonVnRestore
+			if e.config.IBflags&config.IBspellCheckWithDicts == 0 {
+				e.config.IBflags |= config.IBspellCheckWithRules
+			}
+		} else {
+			e.config.IBflags &= ^(config.IBspellCheckEnabled | config.IBautoNonVnRestore)
+		}
+	}
+
+	switch propName {
+	case PropKeyStdToneStyle:
+		setBambooFlag(bamboo.EstdToneStyle)
+	case PropKeyFreeToneMarking:
+		setBambooFlag(bamboo.EfreeToneMarking)
+	case PropKeyEnableSpellCheck:
+		enableSpellCheck(checked)
+	case PropKeySpellCheckByRules:
+		setFlag(config.IBspellCheckWithRules)
+		if checked {
+			enableSpellCheck(true)
+		}
+	case PropKeySpellCheckByDicts:
+		setFlag(config.IBspellCheckWithDicts)
+		if checked {
+			enableSpellCheck(true)
+			e.dictionary, _ = loadDictionary(DictVietnameseCm)
+		}
+	case PropKeyMouseCapturing:
+		setFlag(config.IBmouseCapturing)
+		if checked {
+			startMouseCapturing()
+			startMouseRecording()
+		} else {
+			stopMouseCapturing()
+			stopMouseRecording()
+		}
+	case PropKeyMacroEnabled:
+		setFlag(config.IBmacroEnabled)
+		if checked {
+			e.macroTable.Enable(e.engineName)
+		} else {
+			e.macroTable.Disable()
+		}
+	case PropKeyPreeditInvisibility:
+		setFlag(config.IBnoUnderline)
+	case PropKeyPreeditElimination:
+		setFlag(config.IBpreeditElimination)
+	case PropKeyAutoCapitalizeMacro:
+		setFlag(config.IBautoCapitalizeMacro)
+		if e.config.IBflags&config.IBmacroEnabled != 0 {
+			e.macroTable.Reload(e.engineName, checked)
+		}
+	}
 }
