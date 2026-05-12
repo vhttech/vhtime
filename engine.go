@@ -133,10 +133,12 @@ func (e *Engine) FocusIn() *dbus.Error {
 			e.dictionary, _ = loadDictionary(DictVietnameseCm)
 		})
 	}
-	if inStringList(disabledMouseCapturingList, e.getWmClass()) {
-		stopMouseCapturing()
-	} else if e.config.IBflags&config.IBmouseCapturing != 0 {
-		startMouseCapturing()
+	if !isWayland {
+		if inStringList(disabledMouseCapturingList, e.getWmClass()) {
+			stopMouseCapturing()
+		} else if e.config.IBflags&config.IBmouseCapturing != 0 {
+			startMouseCapturing()
+		}
 	}
 	return nil
 }
@@ -350,12 +352,15 @@ func (e *Engine) applyPropChange(propName string, checked bool) {
 		}
 	case PropKeyMouseCapturing:
 		setFlag(config.IBmouseCapturing)
-		if checked {
-			startMouseCapturing()
-			startMouseRecording()
-		} else {
-			stopMouseCapturing()
-			stopMouseRecording()
+		// X11 Record/XTest unavailable on pure Wayland — guard all calls.
+		if !isWayland {
+			if checked {
+				startMouseCapturing()
+				startMouseRecording()
+			} else {
+				stopMouseCapturing()
+				stopMouseRecording()
+			}
 		}
 	case PropKeyMacroEnabled:
 		setFlag(config.IBmacroEnabled)

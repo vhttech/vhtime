@@ -55,7 +55,9 @@ func (e *Engine) init() {
 	e.keyPressHandler = e.forwardOrDropKeyPress
 	e.startKeyPressCapturing()
 
-	if e.config.IBflags&config.IBmouseCapturing != 0 {
+	// Mouse capturing uses X11 Record extension and XTest — both unavailable on
+	// pure Wayland. Guard to avoid silent no-ops that waste cycles and confuse state.
+	if !isWayland && e.config.IBflags&config.IBmouseCapturing != 0 {
 		startMouseCapturing()
 		startMouseRecording()
 	}
@@ -76,7 +78,10 @@ func (e *Engine) init() {
 			e.resetFakeBackspace()
 			e.resetBuffer()
 			e.keyPressDelay = KeypressDelayMs
-			if e.capabilities&IBusCapSurroundingText != 0 {
+			// x11SendShiftR triggers SurroundingText retrieval via XTest.
+			// On Wayland this is unavailable — skip and rely on IBus surrounding-text
+			// signal directly (isSurroundingTextReady set by FocusIn/RequireSurroundingText).
+			if !isWayland && e.capabilities&IBusCapSurroundingText != 0 {
 				x11SendShiftR()
 				e.isSurroundingTextReady = true
 				e.keyPressDelay = KeypressDelayMs * 10
