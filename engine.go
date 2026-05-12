@@ -144,6 +144,20 @@ func (e *Engine) FocusIn() *dbus.Error {
 }
 
 func (e *Engine) FocusOut() *dbus.Error {
+	// Commit any pending preedit so it is not lost when the user switches windows.
+	// On Wayland, focus transitions happen more frequently (panels, popups, OSDs)
+	// making dangling preedit a common source of lost characters.
+	e.resetBuffer()
+	// Close any open overlay UI so it does not persist across focus changes.
+	if e.isEmojiLTOpened {
+		e.closeEmojiCandidates()
+	}
+	if e.isInHexadecimal {
+		e.closeHexadecimalInput()
+	}
+	if e.isInputModeLTOpened {
+		e.closeInputModeCandidates()
+	}
 	return nil
 }
 
