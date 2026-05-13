@@ -97,10 +97,11 @@ func startMouseCapturing() {
 }
 
 func stopMouseCapturing() {
-	mcapMutex.RLock()
-	defer mcapMutex.RUnlock()
+	mcapMutex.Lock()
+	defer mcapMutex.Unlock()
 	if mcapRunning {
 		C.mouse_capture_exit()
+		mcapRunning = false
 	}
 }
 

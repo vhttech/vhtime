@@ -91,13 +91,16 @@ func (e *Engine) expandMacro(str string) string {
 }
 
 func (e *Engine) updatePreedit(processedStr string) {
+	var encodedStr = e.encodeText(processedStr)
+	var preeditLen = uint32(len([]rune(encodedStr)))
+	// Signal mouse capture only when preedit is non-empty.  Signalling on empty
+	// preedit (e.g. after backspace clears the buffer) would cause the grab thread
+	// to re-grab the pointer with nothing to commit, blocking user clicks.
 	defer func() {
-		if e.config.IBflags&config.IBmouseCapturing != 0 {
+		if e.config.IBflags&config.IBmouseCapturing != 0 && preeditLen > 0 {
 			mouseCaptureUnlock()
 		}
 	}()
-	var encodedStr = e.encodeText(processedStr)
-	var preeditLen = uint32(len([]rune(encodedStr)))
 	if preeditLen == 0 {
 		e.HidePreeditText()
 		e.HideAuxiliaryText()

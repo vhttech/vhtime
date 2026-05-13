@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <pthread.h>
+#include <semaphore.h>
 #include <sys/time.h>
 #include <unistd.h>
 #include <time.h>
@@ -29,117 +30,110 @@
 #define CAPTURE_MOUSE_MOVE_DELTA        50
 
 static pthread_t th_mcap;
-static pthread_mutex_t mutex_mcap;
+/*
+ * sem_mcap is a counting semaphore used as a cross-thread signal.
+ * Each sem_post() from mouse_capture_unlock() (triggered by a preedit update)
+ * causes the capture thread to grab the pointer once.  Using a semaphore instead
+ * of a mutex avoids the POSIX-undefined "unlock from a different thread" and
+ * "same-thread double-lock" patterns that the old mutex code relied on.
+ */
+static sem_t sem_mcap;
 static Display* dpy;
-static int mcap_running;
+static volatile int mcap_running;
 
-static void signalHandler(int signo) {
-    mcap_running = signo;
+static void delay_ms(long msec) {
+    struct timespec ts;
+    ts.tv_sec  = msec / 1000;
+    ts.tv_nsec = (msec % 1000) * 1000 * 1000;
+    nanosleep(&ts, NULL);
 }
-/**
- * milliseconds over 1000 will be ignored
- */
-static void delay(time_t sec, long msec) {
-    struct timespec sleep;
 
-    sleep.tv_sec  = sec;
-    sleep.tv_nsec = (msec % 1000) * 1000 * 1000;
-
-    if (nanosleep(&sleep, NULL) == -1) {
-        signalHandler(1);
-    }
-}
-/**
- * returns 0 for failure, 1 for success
- */
-static int grabPointer(Display *dpy, Window w, unsigned int mask) {
+/* returns 1 on success, 0 if grab failed or mcap_running became 0 */
+static int grabPointer(Display *d, Window w) {
     int rc;
-
-    /* retry until we actually get the pointer (with a suitable delay)
-     * or we get an error we can't recover from. */
     while (mcap_running == 1) {
-        rc = XGrabPointer(dpy, w, 0, ButtonPressMask | PointerMotionMask, GrabModeAsync, GrabModeAsync, None, None, CurrentTime);
-
+        rc = XGrabPointer(d, w, 0, ButtonPressMask | PointerMotionMask,
+                          GrabModeAsync, GrabModeAsync, None, None, CurrentTime);
         switch (rc) {
             case GrabSuccess:
-                fprintf(stderr, "XGrabPointer: successfully grabbed mouse pointer\n");
                 return 1;
-
             case AlreadyGrabbed:
-                fprintf(stderr, "XGrabPointer: already grabbed mouse pointer, retrying with delay\n");
-                delay(1, 500);
-                break;
-
             case GrabFrozen:
-                fprintf(stderr, "XGrabPointer: grab was frozen, retrying after delay\n");
-                delay(1, 500);
+                delay_ms(100);
                 break;
-
-            case GrabNotViewable:
-                fprintf(stderr, "XGrabPointer: grab was not viewable, exiting\n");
-                return 0;
-
-            case GrabInvalidTime:
-                fprintf(stderr, "XGrabPointer: invalid time, exiting\n");
-                return 0;
-
             default:
-                fprintf(stderr, "XGrabPointer: could not grab mouse pointer (%d), exiting\n", rc);
+                fprintf(stderr, "XGrabPointer failed (%d)\n", rc);
                 return 0;
         }
     }
-
     return 0;
 }
 
 static void* thread_mouse_capture(void* data)
 {
     XEvent event;
-    int x_old, y_old, x_root_old, y_root_old, rt;
+    int x_root_old = 0, y_root_old = 0;
+    Window w, dummy_root, dummy_child;
+    int dummy_x, dummy_y;
     unsigned int mask;
-    Window w, w_root_return, w_child_return;
 
     dpy = XOpenDisplay(NULL);
     if (!dpy) {
         return NULL;
     }
     w = XDefaultRootWindow(dpy);
+    XQueryPointer(dpy, w, &dummy_root, &dummy_child,
+                  &x_root_old, &y_root_old, &dummy_x, &dummy_y, &mask);
 
-    XQueryPointer(dpy, w, &w_root_return, &w_child_return, &x_root_old, &y_root_old, &x_old, &y_old, &mask);
-    while (mcap_running == 1 && grabPointer(dpy, w, mask)) {
+    while (mcap_running == 1) {
+        /*
+         * Block here until updatePreedit signals that preedit text is active.
+         * This ensures the pointer is only grabbed while there is something to
+         * commit — eliminating the "idle grab" that prevented user clicks.
+         */
+        sem_wait(&sem_mcap);
+        if (mcap_running == 0)
+            break;
+
+        if (!grabPointer(dpy, w))
+            continue;
+
+        /* Poll for the first pointer event while the grab is held. */
         while (mcap_running == 1) {
             if (XPending(dpy) > 0) {
-                XPeekEvent(dpy, &event);
+                XNextEvent(dpy, &event);   /* consume — prevents stale re-detection */
                 break;
             }
-            delay(0, 50);
+            delay_ms(50);
         }
         XUngrabPointer(dpy, CurrentTime);
-        XSync(dpy, 1);
-        pthread_mutex_trylock(&mutex_mcap); // set mutex to lock status, so this thread will wait until next unlock (by update preedit string)
+        XFlush(dpy);
 
         if (mcap_running == 0)
             break;
-        if (event.type == MotionNotify) // mouse move
-        {
+
+        if (event.type == MotionNotify) {
             if ((abs(event.xmotion.x_root - x_root_old) >= CAPTURE_MOUSE_MOVE_DELTA) ||
-                (abs(event.xmotion.y_root - y_root_old) >= CAPTURE_MOUSE_MOVE_DELTA)) // mouse move at least CAPTURE_MOUSE_MOVE_DELTA
-            {
-                fprintf(stderr, "MotionNotify: delta_x=%d delta_y=%d\n", abs(event.xmotion.x_root - x_root_old), abs(event.xmotion.y_root - y_root_old));
+                (abs(event.xmotion.y_root - y_root_old) >= CAPTURE_MOUSE_MOVE_DELTA)) {
                 mouse_move_handler();
                 x_root_old = event.xmotion.x_root;
                 y_root_old = event.xmotion.y_root;
             }
-            else { // if don't reset -> unlock mutex so mouse continue to be grab
-                pthread_mutex_unlock(&mutex_mcap);
-            }
-        }
-        else {
-            fprintf(stderr, "MotionNotify: click\n");
+            /*
+             * Small move: do NOT re-grab immediately.  The old code called
+             * pthread_mutex_unlock here to re-trigger the grab, which kept the
+             * pointer grabbed continuously during slow mouse movements and caused
+             * clicks to be swallowed indefinitely.  Now we simply fall through to
+             * sem_wait so the grab only resumes on the next preedit update.
+             * XRecord (x11_record.c) still detects clicks passively and commits
+             * preedit without blocking click delivery.
+             */
+        } else {
             mouse_click_handler();
         }
-        pthread_mutex_lock(&mutex_mcap);
+        /* Loop back to sem_wait: grab is idle until next preedit update. */
     }
+
     mcap_running = 0;
     XCloseDisplay(dpy);
     return NULL;
@@ -149,41 +143,38 @@ void mouse_capture_init()
 {
     setbuf(stdout, NULL);
     setbuf(stderr, NULL);
-    if (mcap_running==1) {
+    if (mcap_running == 1) {
         return;
     }
     XInitThreads();
     mcap_running = 1;
-    pthread_mutex_init(&mutex_mcap, NULL);
-    pthread_mutex_trylock(&mutex_mcap); // lock mutex after init so mouse capture not start
+    sem_init(&sem_mcap, 0, 0);  /* start blocked: grab only when preedit signals */
     pthread_create(&th_mcap, NULL, &thread_mouse_capture, NULL);
     pthread_detach(th_mcap);
 }
 
 void mouse_capture_exit()
 {
-    if (mcap_running==0) {
+    if (mcap_running == 0) {
         return;
     }
     mcap_running = 0;
-    pthread_mutex_unlock(&mutex_mcap); // unlock mutex, so thread can exit
+    sem_post(&sem_mcap);   /* wake thread so it can observe mcap_running == 0 */
 }
 
-// every time have preedit text -> unlock mutex -> start capture mouse
+/* Called by updatePreedit when preedit text is non-empty. */
 void mouse_capture_unlock()
 {
-    if (mcap_running==0) {
+    if (mcap_running == 0) {
         return;
     }
-    // unlock capture thread (start capture)
-    pthread_mutex_unlock(&mutex_mcap);
+    sem_post(&sem_mcap);
 }
 
 void mouse_capture_start_or_unlock()
 {
-    if (mcap_running==0) {
+    if (mcap_running == 0) {
         mouse_capture_init();
     }
-    // unlock capture thread (start capture)
-    pthread_mutex_unlock(&mutex_mcap);
+    sem_post(&sem_mcap);
 }
