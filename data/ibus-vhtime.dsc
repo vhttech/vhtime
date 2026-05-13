@@ -5,14 +5,14 @@ Format: 3.0 (quilt)
 Source: ibus-vhtime
 Binary: ibus-vhtime
 Architecture: any
-Version: 0.8.4-0
+Version: 1.0.0-0
 Maintainer: Luong Thanh Lam <ltlam93@gmail.com>
 Homepage: https://github.com/vhtech/ibus-vhtime
 Build-Depends: debhelper (>= 9), golang, libibus-1.0-dev, libx11-dev, libgtk-3-dev, libxt-dev, libxtst-dev
 Files:
- 0 0 ibus-vhtime-0.8.4.tar.gz
+ 0 0 ibus-vhtime-1.0.0.tar.gz
 DEBTRANSFORM-TAR:
- ibus-vhtime-0.8.4.tar.gz
+ ibus-vhtime-1.0.0.tar.gz
 
 -----BEGIN PGP SIGNATURE-----
 
