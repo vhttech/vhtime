@@ -67,6 +67,42 @@ func (e *Engine) preeditProcessKeyEvent(keyVal uint32, keyCode uint32, state uin
 		return true, nil
 	}
 
+	// Address-bar autocomplete fix for browsers (X11 + Wayland).
+	//
+	// Problem: when rawKeyLen==1 (e.g. the user typed "fa" where 'f' was
+	// passed natively and 'a' is the sole preedit char), IBus put Chrome into
+	// composition mode. Chrome's omnibox disables inline autocomplete while
+	// composition is active, so pressing Enter searches for "fa" instead of
+	// navigating to facebook.com — even though the popup shows the suggestion.
+	//
+	// Fix: instead of CommitText (compositionend → async autocomplete re-query
+	// → race with Enter), we:
+	//   1. Clear the preedit → Chrome exits composition mode.
+	//   2. ForwardKeyEvent(char) → Chrome processes the char as a native key
+	//      event, immediately updating the inline autocomplete suggestion.
+	//   3. return false → Chrome receives Enter natively AFTER the char and
+	//      navigates to the top autocomplete suggestion.
+	//
+	// Ordering guarantee: ForwardKeyEvent is sent during ProcessKeyEvent
+	// processing, before return false triggers re-injection of Enter. On both
+	// X11 (X server queue) and Wayland (compositor queue) the char event
+	// arrives at Chrome's window before the re-injected Enter event.
+	if (keyVal == IBusReturn || keyVal == 0xff8d) && rawKeyLen == 1 && e.inBrowserList() {
+		if preeditRunes := []rune(oldText); len(preeditRunes) == 1 {
+			e.UpdatePreeditText(ibus.NewText(""), 0, false)
+			e.HidePreeditText()
+			e.HideAuxiliaryText()
+			e.preeditor.Reset()
+			kv := vnSymMapping[preeditRunes[0]]
+			if kv == 0 {
+				kv = uint32(preeditRunes[0])
+			}
+			e.ForwardKeyEvent(kv, 0, 0)
+			e.ForwardKeyEvent(kv, 0, IBusReleaseMask)
+			return false, nil
+		}
+	}
+
 	newText, isWordBreakRune := e.getCommitText(keyVal, keyCode, state)
 	isPrintableKey := e.isPrintableKey(state, keyVal)
 	if isWordBreakRune {
