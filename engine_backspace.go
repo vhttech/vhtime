@@ -333,6 +333,7 @@ func (e *Engine) bsCommitText(rs []rune) {
 	useForwardKey := e.checkInputMode(config.ForwardAsCommitIM) ||
 		(e.checkInputMode(config.XTestFakeKeyEventIM) && !isWayland)
 	if useForwardKey {
+		log.Printf("[vhtime] bsCommitText → ForwardKeyEvent %q", string(rs))
 		for _, chr := range rs {
 			keyVal := vnSymMapping[chr]
 			if keyVal == 0 {
