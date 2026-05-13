@@ -11,7 +11,7 @@ make src         # Tạo tarball nguồn
 ```
 
 **scripts/build**:
-- Linux: `CGO_ENABLED=1 go build -o ibus-engine-vhtime -ldflags "-w -s -X main.Version=0.8.4" -mod=vendor`
+- Linux: `CGO_ENABLED=1 go build -o ibus-engine-vhtime -ldflags "-w -s -X main.Version=1.0.0" -mod=vendor`
 - FreeBSD: thêm `CGO_CFLAGS=-I/usr/local/include`, `CGO_LDFLAGS=-L/usr/local/lib`
 
 **Version**: inject lúc build qua `-X main.Version`, biến khai báo trong `version.go`.

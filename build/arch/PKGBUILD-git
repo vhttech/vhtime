@@ -17,7 +17,7 @@
 #
 # Maintainer: Luong Thanh Lam <ltlam93@gmail.com>
 pkgname=ibus-vhtime-git
-pkgver=0.8.4
+pkgver=1.0.0
 pkgrel=2
 pkgdesc='A Vietnamese IME for IBus'
 arch=(any)
