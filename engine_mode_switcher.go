@@ -21,17 +21,6 @@ func (e *Engine) getInputMode() int {
 		if !isWayland && inStringList(x11NonXimTerminals, wmClass) {
 			return config.ForwardAsCommitIM
 		}
-		// Browsers must NOT use PreeditIM. PreeditIM puts the browser into IME
-		// composition mode which disables the address-bar inline autocomplete
-		// (the grey "cebook.com" suffix). Without inline autocomplete, pressing
-		// Enter searches instead of navigating to the top suggestion.
-		// BackspaceForwardingIM commits text directly without creating a preedit
-		// composition, so the address bar behaves identically to native typing.
-		// Vietnamese correction still works via CommitText + backspace pairs.
-		// Users can override per-app via the input mode picker.
-		if inStringList(DefaultBrowserList, wmClass) {
-			return config.BackspaceForwardingIM
-		}
 	}
 	if _, ok := config.ImLookupTable[e.config.DefaultInputMode]; ok {
 		return e.config.DefaultInputMode
