@@ -204,11 +204,15 @@ func (e *Engine) resetPreedit() {
 }
 
 func (e *Engine) commitPreeditAndResetForWBS(s string, isPrintable bool) {
-	// Clear client preedit state to PREEDIT_CLEAR before committing, so that
-	// GTK/Chromium does not auto-commit the cached preedit string when
-	// ibus_input_context_reset() is called after Enter submits a form.
-	e.UpdatePreeditText(ibus.NewText(""), 0, false)
+	// CommitText must fire BEFORE clearing the preedit.
+	// Clearing first (UpdatePreeditText("")) causes Chrome to fire compositionend("")
+	// which React/Draft.js/Lexical interprets as a cancelled composition and reverts
+	// the input to its pre-composition state — making the word disappear. Committing
+	// first lets the browser fire compositionend(s) atomically with the final text.
+	// PREEDIT_CLEAR (set in updatePreedit) prevents the browser from auto-committing
+	// the preedit again on IBus reset, so there is no double-commit risk.
 	e.commitText(s)
+	e.UpdatePreeditText(ibus.NewText(""), 0, false)
 	e.HidePreeditText()
 	e.HideAuxiliaryText()
 	e.HideLookupTable()
@@ -216,11 +220,11 @@ func (e *Engine) commitPreeditAndResetForWBS(s string, isPrintable bool) {
 }
 
 func (e *Engine) commitPreeditAndReset(s string) {
+	e.commitText(s)
 	e.UpdatePreeditText(ibus.NewText(""), 0, false)
 	e.HidePreeditText()
 	e.HideAuxiliaryText()
 	e.HideLookupTable()
-	e.commitText(s)
 	e.preeditor.Reset()
 }
 
