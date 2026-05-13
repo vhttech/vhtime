@@ -23,7 +23,7 @@ engine_name=vhtime
 engine_gui_name=ibus-setup-vhtime.desktop
 ibus_e_name=ibus-engine-$(engine_name)
 pkg_name=ibus-$(engine_name)
-version=1.0.0
+version=1.0.1
 
 engine_dir=$(PREFIX)/share/$(pkg_name)
 ibus_dir=$(PREFIX)/share/ibus
