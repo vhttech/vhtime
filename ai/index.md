@@ -7,7 +7,7 @@
 ## Dự án là gì?
 
 **ibus-vhtime** là một bộ gõ tiếng Việt (Vietnamese Input Method Editor) chạy trên IBus framework,
-viết bằng Go + CGo. Phiên bản hiện tại: **0.8.4**.
+viết bằng Go + CGo. Phiên bản hiện tại: **1.0.0**.
 
 - Hỗ trợ Linux (X11 + Wayland) và FreeBSD
 - Phương thức gõ: Telex, VNI, VIQR, … (bamboo-core xử lý)

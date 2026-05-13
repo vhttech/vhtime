@@ -1,7 +1,7 @@
 #!/bin/bash
 # ibus-vhtime installer — GUI (zenity) with terminal fallback
 
-VERSION="0.8.4"
+VERSION="1.0.0"
 PKG_NAME="ibus-vhtime"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TITLE="Cài đặt $PKG_NAME $VERSION"

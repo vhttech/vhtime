@@ -6,7 +6,7 @@
 %define _unpackaged_files_terminate_build 0
 
 Name: ibus-vhtime
-Version: 0.8.4
+Version: 1.0.0
 Release: 1%{?dist}
 Summary: A Vietnamese input method for IBus
 
