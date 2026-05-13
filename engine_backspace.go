@@ -62,12 +62,23 @@ func (e *Engine) backspaceProcessKeyEvent(keyVal uint32, keyCode uint32, state u
 	if e.config.IBflags&config.IBmacroEnabled == 0 && len(e.keyPressChan) == 0 && e.rawInputLen() == 0 && !inKeyList(e.preeditor.GetInputMethod().AppendingKeys, keyRune) {
 		e.updateLastKeyWithShift(keyVal, state)
 		if e.preeditor.CanProcessKey(keyRune) && isValidState(state) {
-			e.isFirstTimeSendingBS = true
 			if state&IBusLockMask != 0 {
 				keyRune = e.toUpper(keyRune)
 			}
 			e.preeditor.ProcessKey(keyRune, bamboo.VietnameseMode)
-			e.bsCommitText([]rune(e.getPreeditString()))
+			preeditRunes := []rune(e.getPreeditString())
+			// In browsers, pass the first character of a new word as a native key
+			// event instead of IBus CommitText. Chrome's address bar inline
+			// autocomplete (grey suggestion text) is only updated by native key
+			// events — CommitText bypasses it, so Enter would search instead of
+			// navigate to the top suggestion (e.g. "fa" → facebook.com).
+			// The preeditor still tracks the char, so subsequent backspace
+			// corrections work correctly.
+			if len(preeditRunes) == 1 && preeditRunes[0] == keyRune && e.inBrowserList() {
+				return false, nil
+			}
+			e.isFirstTimeSendingBS = true
+			e.bsCommitText(preeditRunes)
 			return true, nil
 		}
 		return false, nil
