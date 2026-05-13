@@ -40,6 +40,24 @@ func (e *Engine) backspaceProcessKeyEvent(keyVal uint32, keyCode uint32, state u
 		e.isSurroundingTextReady = true
 		return false, nil
 	}
+	// Enter must reach the application as a native key event, not via
+	// ForwardKeyEvent. Enqueueing it (the normal backspace-mode path) causes
+	// the goroutine to re-inject it through the IBus/XIM channel, which
+	// Chrome's address bar ignores for autocomplete navigation (e.g. typing
+	// "fa" + Enter should open facebook.com, not search for "fa").
+	// Exception: when macro mode is active with buffered input, fall through so
+	// the goroutine can expand any pending macro before releasing Enter.
+	if keyVal == IBusReturn || keyVal == 0xff8d {
+		macroWithBuffer := e.config.IBflags&config.IBmacroEnabled != 0 && e.rawInputLen() > 0
+		if !macroWithBuffer {
+			if e.rawInputLen() > 0 {
+				e.waitForKeyPressQueue()
+				e.preeditor.Reset()
+				e.resetFakeBackspace()
+			}
+			return false, nil
+		}
+	}
 	var keyRune = rune(keyVal)
 	if e.config.IBflags&config.IBmacroEnabled == 0 && len(e.keyPressChan) == 0 && e.rawInputLen() == 0 && !inKeyList(e.preeditor.GetInputMethod().AppendingKeys, keyRune) {
 		e.updateLastKeyWithShift(keyVal, state)
